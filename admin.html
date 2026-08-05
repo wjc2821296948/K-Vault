@@ -34,27 +34,32 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.92);
+      background:
+        linear-gradient(180deg, rgba(5, 10, 18, 0.94), rgba(8, 13, 22, 0.98));
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      padding: 20px;
+      padding: 24px;
     }
     .preview-modal img {
-      max-width: 90%;
-      max-height: 75vh;
+      max-width: min(92vw, 1280px);
+      max-height: 78vh;
       border-radius: 8px;
       object-fit: contain;
+      background: #070b12;
+      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
     }
     .preview-modal .iframe-container {
-      width: 90vw;
-      height: 75vh;
+      width: min(92vw, 1280px);
+      height: min(78vh, 820px);
       position: relative;
       border-radius: 8px;
       overflow: hidden;
-      background: #000;
+      background: #070b12;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
     }
     .preview-modal .iframe-container iframe {
       width: 100%;
@@ -65,34 +70,44 @@
       position: absolute;
       top: 20px;
       right: 20px;
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       border: none;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.12);
       color: white;
-      font-size: 1.5em;
+      font-size: 1.2em;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: background 0.2s ease, transform 0.2s ease;
       z-index: 10001;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .preview-close:hover {
       background: rgba(255, 255, 255, 0.35);
-      transform: rotate(90deg);
+      transform: translateY(-1px);
     }
     .preview-toolbar {
       margin-top: 16px;
       display: flex;
       align-items: center;
-      gap: 16px;
-      padding: 10px 20px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
+      justify-content: space-between;
+      gap: 14px;
+      width: min(92vw, 1280px);
+      padding: 10px 12px 10px 16px;
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      box-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
     .preview-filename {
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.9em;
-      max-width: 300px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 13px;
+      font-weight: 650;
+      min-width: 0;
+      max-width: 62vw;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -100,6 +115,38 @@
     .preview-btns {
       display: flex;
       gap: 8px;
+    }
+    @media (max-width: 720px) {
+      .preview-modal {
+        padding: 12px;
+      }
+      .preview-close {
+        top: 12px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+      }
+      .preview-modal img,
+      .preview-modal .iframe-container,
+      .preview-toolbar {
+        width: 100%;
+      }
+      .preview-modal .iframe-container {
+        height: 74vh;
+      }
+      .preview-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .preview-filename {
+        max-width: 100%;
+      }
+      .preview-btns {
+        justify-content: stretch;
+      }
+      .preview-btns .el-button {
+        flex: 1;
+      }
     }
     .disk-layout {
       display: grid;
@@ -119,6 +166,10 @@
       border: 1px solid rgba(255, 255, 255, 0.65);
       background: rgba(255, 255, 255, 0.86);
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    }
+    .folder-sidebar.is-drag-active {
+      border-color: rgba(67, 195, 124, 0.48);
+      box-shadow: 0 12px 30px rgba(67, 195, 124, 0.16);
     }
     .folder-head {
       display: flex;
@@ -169,6 +220,25 @@
       font-size: 12px;
       color: #666;
       border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+      word-break: break-all;
+    }
+    .folder-drop-hint {
+      margin: 8px 8px 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px dashed rgba(67, 195, 124, 0.72);
+      background: rgba(67, 195, 124, 0.12);
+      color: #1f7a49;
+      display: grid;
+      gap: 4px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .folder-drop-hint strong {
+      font-size: 13px;
+      color: #145d36;
+    }
+    .folder-drop-hint span {
       word-break: break-all;
     }
     .folder-tree {
@@ -296,9 +366,143 @@
     }
     body.is-dragging-files .folder-node {
       transition-duration: 0.12s;
+      border-color: rgba(67, 195, 124, 0.24);
+      background: rgba(67, 195, 124, 0.06);
     }
     body.is-dragging-files .folder-node.is-drop-target {
       box-shadow: inset 0 0 0 1px rgba(67, 195, 124, 0.55), 0 4px 12px rgba(67, 195, 124, 0.18);
+    }
+    .move-folder-dialog .el-dialog__body {
+      padding-top: 10px;
+    }
+    .move-folder-panel {
+      display: grid;
+      gap: 14px;
+    }
+    .move-folder-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(138, 75, 255, 0.08);
+      color: #4f3d75;
+      font-size: 13px;
+    }
+    .move-folder-summary strong {
+      color: #4a2d85;
+      font-size: 15px;
+    }
+    .move-folder-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .move-folder-list {
+      display: grid;
+      gap: 8px;
+      max-height: 280px;
+      overflow: auto;
+      padding: 4px 2px;
+    }
+    .move-folder-option {
+      width: 100%;
+      border: 1px solid rgba(138, 75, 255, 0.14);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.82);
+      color: #3e3454;
+      padding: 11px 12px;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      text-align: left;
+      transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .move-folder-option:hover,
+    .move-folder-option.is-active {
+      border-color: rgba(138, 75, 255, 0.55);
+      background: rgba(138, 75, 255, 0.1);
+      box-shadow: 0 6px 18px rgba(138, 75, 255, 0.1);
+    }
+    .move-folder-option-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 650;
+    }
+    .move-folder-option-meta {
+      color: #82759a;
+      font-size: 12px;
+    }
+    .move-folder-create {
+      border: 1px dashed rgba(138, 75, 255, 0.38);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(138, 75, 255, 0.05);
+      display: grid;
+      gap: 10px;
+    }
+    .move-folder-create-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+    .move-folder-empty {
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px dashed rgba(138, 75, 255, 0.25);
+      color: #82759a;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.72);
+    }
+    .move-folder-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .move-folder-target {
+      color: #63557f;
+      font-size: 13px;
+    }
+    @media (max-width: 720px) {
+      .move-folder-dialog {
+        width: calc(100vw - 28px) !important;
+        margin: 6vh auto 0 !important;
+      }
+      .move-folder-dialog .el-dialog__body {
+        padding: 10px 14px 14px;
+      }
+      .move-folder-summary {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .move-folder-toolbar,
+      .move-folder-create-row {
+        grid-template-columns: 1fr;
+      }
+      .move-folder-list {
+        max-height: 240px;
+      }
+      .move-folder-footer {
+        align-items: stretch;
+      }
+      .move-folder-footer > span:last-child {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        width: 100%;
+      }
+      .move-folder-footer .el-button {
+        width: 100%;
+        margin-left: 0;
+      }
     }
     .empty-tip {
       margin: 26px auto 8px;
@@ -334,6 +538,39 @@
     html[data-theme="dark"] .folder-current {
       color: #c9dbff;
       border-color: rgba(120, 145, 192, 0.24);
+    }
+    html[data-theme="dark"] .folder-drop-hint {
+      background: rgba(67, 195, 124, 0.14);
+      border-color: rgba(87, 221, 147, 0.56);
+      color: #a7f0c6;
+    }
+    html[data-theme="dark"] .folder-drop-hint strong {
+      color: #d9ffe7;
+    }
+    html[data-theme="dark"] .move-folder-summary,
+    html[data-theme="dark"] .move-folder-create,
+    html[data-theme="dark"] .move-folder-empty {
+      background: rgba(103, 118, 255, 0.12);
+      border-color: rgba(135, 152, 255, 0.28);
+      color: #dce7ff;
+    }
+    html[data-theme="dark"] .move-folder-summary strong,
+    html[data-theme="dark"] .move-folder-option-name {
+      color: #eef4ff;
+    }
+    html[data-theme="dark"] .move-folder-option {
+      background: rgba(18, 25, 41, 0.88);
+      border-color: rgba(120, 145, 192, 0.25);
+      color: #dce7ff;
+    }
+    html[data-theme="dark"] .move-folder-option:hover,
+    html[data-theme="dark"] .move-folder-option.is-active {
+      background: rgba(103, 118, 255, 0.2);
+      border-color: rgba(135, 152, 255, 0.55);
+    }
+    html[data-theme="dark"] .move-folder-option-meta,
+    html[data-theme="dark"] .move-folder-target {
+      color: #aebde0;
     }
     html[data-theme="dark"] .folder-node {
       color: #dce7ff;
@@ -958,7 +1195,11 @@
       </el-header>
       <el-main class="main-container">
         <div class="disk-layout">
-          <aside class="folder-sidebar">
+          <aside
+            class="folder-sidebar"
+            :class="{ 'is-drag-active': dragState.active }"
+            @dragover.prevent="handleFolderSidebarDragOver"
+          >
             <div class="folder-head">
               <span class="folder-head-title"><i class="fas fa-folder-tree"></i><span>目录管理</span></span>
               <span class="folder-head-actions">
@@ -969,6 +1210,10 @@
               </span>
             </div>
             <div class="folder-current">当前位置：/{{ folderPath || '' }}</div>
+            <div class="folder-drop-hint" v-if="dragState.active">
+              <strong>{{ dragState.fileIds.length || selectedFiles.length || 1 }} 个文件待移动</strong>
+              <span>拖到下方任意目录后松开，即可移动到：{{ dragTargetLabel }}</span>
+            </div>
             <div class="folder-tree">
               <button
                 v-for="folder in folderTreeNodes"
@@ -1008,7 +1253,30 @@
                 <i :class="item.metadata.liked ? 'fa-solid fa-bookmark liked' : 'fa-regular fa-bookmark not-liked'"></i>
                 </span>
                 <el-checkbox v-model="item.selected" :ref="'checkbox-' + index"></el-checkbox>
-                <el-image :src="'/file/' + item.name" :preview-src-list="['/file/' + item.name]" fit="cover" lazy="true"></el-image>
+                <div
+                  class="preview-stage image-preview-stage"
+                  :class="{ 'is-gated': isPreviewGated(item, 'image') }"
+                  @click.stop="revealPreview(item)">
+                  <el-image
+                    v-if="!isPreviewGated(item, 'image')"
+                    :src="'/file/' + item.name"
+                    :preview-src-list="['/file/' + item.name]"
+                    fit="cover"
+                    lazy>
+                  </el-image>
+                  <div v-else class="preview-skeleton image-skeleton">
+                    <i :class="getFileIcon(item.name)"></i>
+                  </div>
+                  <button
+                    v-if="isPreviewGated(item, 'image')"
+                    class="preview-gate"
+                    type="button"
+                    @click.stop="revealPreview(item)">
+                    <span class="preview-gate-icon"><i class="fas fa-eye"></i></span>
+                    <span class="preview-gate-title">{{ getPreviewGateTitle(item, 'image') }}</span>
+                    <span class="preview-gate-subtitle">{{ getPreviewGateSubtitle(item, 'image') }}</span>
+                  </button>
+                </div>
                 <div class="image-overlay">
                   <div class="overlay-buttons">
                     <el-dropdown @command="(cmd) => handleQuickCopy(cmd, item.name)" trigger="click" size="mini">
@@ -1045,7 +1313,31 @@
             <template v-else-if="getActualFileType(item.name) === 'video'">
               <el-card class="video-card" :class="{ 'selected': item.selected }" :draggable="true" @dragstart="handleFileDragStart(item, $event)" @dragend="handleFileDragEnd">
                 <div class="video-content">
-                  <video :src="'/file/' + item.name" controls style="width: 100%; height: 100%; object-fit: cover;"></video>
+                  <div
+                    class="preview-stage video-preview-stage"
+                    :class="{ 'is-gated': isPreviewGated(item, 'video') }"
+                    @click.stop="revealPreview(item)">
+                    <video
+                      v-if="!isPreviewGated(item, 'video')"
+                      :src="'/file/' + item.name"
+                      controls
+                      playsinline
+                      preload="metadata"
+                      style="width: 100%; height: 100%; object-fit: cover;">
+                    </video>
+                    <div v-else class="preview-skeleton video-skeleton">
+                      <i class="fas fa-film"></i>
+                    </div>
+                    <button
+                      v-if="isPreviewGated(item, 'video')"
+                      class="preview-gate"
+                      type="button"
+                      @click.stop="revealPreview(item)">
+                      <span class="preview-gate-icon"><i class="fas fa-play"></i></span>
+                      <span class="preview-gate-title">{{ getPreviewGateTitle(item, 'video') }}</span>
+                      <span class="preview-gate-subtitle">{{ getPreviewGateSubtitle(item, 'video') }}</span>
+                    </button>
+                  </div>
                   <div class="video-title">
                     <el-popover
                       trigger="click"
@@ -1097,13 +1389,31 @@
                       <div class="audio-subtitle">{{ getFileType(item.name) }}</div>
                     </div>
                   </div>
-                  <audio
-                    class="custom-audio-player"
-                    :src="'/file/' + item.name"
-                    controls
-                    preload="metadata">
-                    当前浏览器不支持音频播放
-                  </audio>
+                  <div
+                    class="preview-stage audio-preview-stage"
+                    :class="{ 'is-gated': isPreviewGated(item, 'audio') }"
+                    @click.stop="revealPreview(item)">
+                    <audio
+                      v-if="!isPreviewGated(item, 'audio')"
+                      class="custom-audio-player"
+                      :src="'/file/' + item.name"
+                      controls
+                      preload="metadata">
+                      当前浏览器不支持音频播放
+                    </audio>
+                    <div v-else class="preview-skeleton audio-skeleton">
+                      <i class="fas fa-wave-square"></i>
+                    </div>
+                    <button
+                      v-if="isPreviewGated(item, 'audio')"
+                      class="preview-gate compact"
+                      type="button"
+                      @click.stop="revealPreview(item)">
+                      <span class="preview-gate-icon"><i class="fas fa-play"></i></span>
+                      <span class="preview-gate-title">{{ getPreviewGateTitle(item, 'audio') }}</span>
+                      <span class="preview-gate-subtitle">{{ getPreviewGateSubtitle(item, 'audio') }}</span>
+                    </button>
+                  </div>
                   <!-- 控制按钮区域 -->
                   <div class="audio-controls">
                     <button class="control-btn like-btn" @click.stop="toggleLike(index, item.name)"><i :class="item.metadata.liked ? 'fas fa-heart liked' : 'far fa-heart'"></i></button>
@@ -1394,6 +1704,96 @@
       </div>
     </el-dialog>
 
+    <el-dialog
+      title="移动文件"
+      :visible.sync="moveDialogVisible"
+      width="680px"
+      append-to-body
+      custom-class="move-folder-dialog"
+      @opened="refreshMoveDialogFolders">
+      <div class="move-folder-panel">
+        <div class="move-folder-summary">
+          <div>
+            <strong>{{ moveDialogFiles.length }}</strong>
+            个文件将移动到新的目录
+          </div>
+          <span>当前目标：{{ moveDialogTargetLabel }}</span>
+        </div>
+
+        <div class="move-folder-toolbar">
+          <el-input
+            size="small"
+            clearable
+            prefix-icon="el-icon-search"
+            v-model="moveDialogFolderSearch"
+            placeholder="搜索后端已有目录">
+          </el-input>
+          <el-button
+            size="small"
+            icon="el-icon-refresh"
+            :loading="moveDialogFoldersLoading"
+            @click="refreshMoveDialogFolders(true)">
+            刷新目录
+          </el-button>
+        </div>
+
+        <div class="move-folder-list" v-loading="moveDialogFoldersLoading">
+          <button
+            v-for="folder in moveDialogFolderOptions"
+            :key="'move-folder-' + folder.path"
+            type="button"
+            class="move-folder-option"
+            :class="{ 'is-active': moveDialogTargetPath === folder.path }"
+            @click="selectMoveDialogFolder(folder.path)">
+            <i :class="folder.path ? 'fas fa-folder' : 'fas fa-house'"></i>
+            <span class="move-folder-option-name">{{ folder.label }}</span>
+            <span class="move-folder-option-meta">
+              {{ folder.fileCountLabel }}
+            </span>
+          </button>
+          <div v-if="!moveDialogFoldersLoading && moveDialogFolderOptions.length === 0" class="move-folder-empty">
+            没有匹配的目录，可以在下方新建后直接移动。
+          </div>
+        </div>
+
+        <div class="move-folder-create">
+          <div class="move-folder-target">
+            新建目录并移动：输入路径后点击“新建并移动”，不会改变文件原始直链。
+          </div>
+          <div class="move-folder-create-row">
+            <el-input
+              size="small"
+              v-model="moveDialogNewFolderPath"
+              placeholder="例如：图片/2026/七月"
+              @keyup.enter.native="createFolderAndMoveSelected">
+            </el-input>
+            <el-button
+              size="small"
+              type="success"
+              icon="el-icon-folder-add"
+              :loading="moveDialogLoading"
+              @click="createFolderAndMoveSelected">
+              新建并移动
+            </el-button>
+          </div>
+        </div>
+      </div>
+
+      <span slot="footer" class="dialog-footer move-folder-footer">
+        <span class="move-folder-target">将移动到：{{ moveDialogTargetLabel }}</span>
+        <span>
+          <el-button size="small" @click="moveDialogVisible = false">取消</el-button>
+          <el-button
+            size="small"
+            type="primary"
+            :loading="moveDialogLoading"
+            @click="confirmMoveDialog">
+            移动到所选目录
+          </el-button>
+        </span>
+      </span>
+    </el-dialog>
+
     <!-- 预览弹窗 - 模态框模式（不跳转新标签页） -->
     <div class="preview-modal" v-if="previewData" @click="closePreview">
       <button class="preview-close" @click.stop="closePreview">
@@ -1458,25 +1858,25 @@
         },
         image: {
           name: '图片',
-          exts: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'ico', 'svg', 'heic', 'heif', 'avif'],
+          exts: ['jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp', 'png', 'apng', 'gif', 'webp', 'bmp', 'tif', 'tiff', 'ico', 'svg', 'heic', 'heif', 'avif', 'jxl'],
           icon: 'fas fa-image',
           count: 0
         },
         video: {
           name: '视频',
-          exts: ['mp4', 'webm', 'ogg', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'm4v', '3gp', 'ts'],
+          exts: ['mp4', 'webm', 'ogg', 'ogv', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'm4v', 'm3u8', '3gp', 'ts', 'mts', 'm2ts'],
           icon: 'fas fa-video',
           count: 0
         },
         audio: {
           name: '音频',
-          exts: ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'ape', 'opus'],
+          exts: ['mp3', 'mpeg', 'wav', 'ogg', 'oga', 'flac', 'aac', 'm4a', 'wma', 'ape', 'opus', 'weba', 'midi', 'mid', 'aif', 'aiff'],
           icon: 'fas fa-music',
           count: 0
         },
         document: {
           name: '文件',
-          exts: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'md', 'zip', 'rar', '7z', 'tar', 'gz', 'exe', 'apk', 'dmg', 'iso', 'msi', 'deb', 'rpm', 'json', 'xml', 'csv', 'sql', 'html', 'css', 'js', 'py', 'java', 'go', 'rs', 'cpp', 'c', 'h'],
+          exts: ['pdf', 'ofd', 'typ', 'typst', 'doc', 'dot', 'docx', 'docm', 'dotx', 'dotm', 'rtf', 'odt', 'xls', 'xlsb', 'xlsx', 'xlsm', 'xlt', 'xltx', 'xltm', 'ods', 'fods', 'numbers', 'ppt', 'pptx', 'pptm', 'ppsx', 'ppsm', 'potx', 'potm', 'odp', 'txt', 'md', 'markdown', 'zip', 'zipx', 'jar', 'war', 'ear', 'rar', '7z', 'tar', 'tgz', 'gz', 'gzip', 'bz2', 'bzip2', 'tbz', 'tbz2', 'xz', 'txz', 'lzma', 'zst', 'cab', 'iso', 'exe', 'apk', 'dmg', 'msi', 'deb', 'rpm', 'json', 'jsonc', 'json5', 'xml', 'csv', 'tsv', 'sql', 'html', 'css', 'js', 'ts', 'tsx', 'jsx', 'vue', 'py', 'java', 'go', 'rs', 'cpp', 'c', 'h', 'ttf', 'otf', 'woff', 'woff2', 'eml', 'msg', 'mbox', 'psd', 'ai', 'eps', 'sqlite', 'sqlite3', 'db', 'parquet', 'avro', 'wasm', 'webarchive', 'dwg', 'dxf', 'dwf', 'dwfx', 'xps', 'xmind', 'drawio', 'dio', 'excalidraw', 'mermaid', 'mmd', 'plantuml', 'puml', 'epub', 'umd', 'geojson', 'kml', 'gpx', 'shp', 'glb', 'gltf', 'obj', 'stl', 'ply', 'fbx', 'dae', '3ds', '3mf', 'usd', 'usdz', 'kmz', 'step', 'stp', 'iges', 'igs', 'ifc', 'olb', 'dra', 'gds', 'oas', 'oasis'],
           icon: 'fas fa-folder-open',
           count: 0
         }
@@ -1538,6 +1938,7 @@
         offsetY: 0
       },
       previewData: null,  // 模态框预览数据
+      revealedPreviewKeys: {},
       quickWebsites: [
         { name: '上传中心', url: './', icon: 'fas fa-cloud-upload-alt' },
         { name: '图片浏览', url: './gallery.html', icon: 'fas fa-images' },
@@ -1561,6 +1962,13 @@
         expiryPreset: 'never',
         customExpiresAt: '',
       },
+      moveDialogVisible: false,
+      moveDialogLoading: false,
+      moveDialogFoldersLoading: false,
+      moveDialogFiles: [],
+      moveDialogTargetPath: '',
+      moveDialogFolderSearch: '',
+      moveDialogNewFolderPath: '',
     },
     computed: {
       filteredTableData() {
@@ -1663,7 +2071,7 @@
       folderTreeNodes() {
         const list = [{
           path: '',
-          name: '全部文件',
+          name: '根目录',
           depth: 0,
           fileCount: this.folderPath ? '-' : this.Number,
         }];
@@ -1681,6 +2089,50 @@
           return a.path.localeCompare(b.path, 'zh-CN');
         });
         return list.concat(nodes);
+      },
+      dragTargetLabel() {
+        if (!this.dragState.active) return '未选择目录';
+        const target = this.normalizeFolderPath(this.dragState.targetPath || '');
+        return target || '根目录';
+      },
+      moveDialogTargetLabel() {
+        const target = this.normalizeFolderPath(this.moveDialogTargetPath || '');
+        return target || '根目录';
+      },
+      moveDialogFolderOptions() {
+        const keyword = String(this.moveDialogFolderSearch || '').trim().toLowerCase();
+        const normalized = new Map();
+        normalized.set('', {
+          path: '',
+          label: '根目录',
+          fileCount: this.folderPath ? 0 : this.Number,
+        });
+        (this.folders || []).forEach((folder) => {
+          const path = this.normalizeFolderPath(folder.path || folder.folderPath || '');
+          if (!path) return;
+          normalized.set(path, {
+            path,
+            label: path,
+            fileCount: Number(folder.fileCount || 0),
+          });
+        });
+        return Array.from(normalized.values())
+          .filter((folder) => {
+            if (!keyword) return true;
+            return folder.label.toLowerCase().includes(keyword);
+          })
+          .map((folder) => ({
+            ...folder,
+            fileCountLabel: folder.path ? `${folder.fileCount || 0} 个文件` : '根目录',
+          }))
+          .sort((a, b) => {
+            if (!a.path) return -1;
+            if (!b.path) return 1;
+            const depthA = a.path.split('/').length;
+            const depthB = b.path.split('/').length;
+            if (depthA !== depthB) return depthA - depthB;
+            return a.path.localeCompare(b.path, 'zh-CN');
+          });
       },
       batchToolbarStyle() {
         if (this.isMobileViewport) {
@@ -2098,6 +2550,40 @@
         const target = this.tableData.find((item) => item.name === name);
         if (target) target.selected = !target.selected;
       },
+      getFileMoveId(file) {
+        return String(file?.id || file?.name || file?.key || file?.metadata?.id || '').trim();
+      },
+      getFileMovePayload(file) {
+        return {
+          id: this.getFileMoveId(file),
+          name: file?.name || '',
+          key: file?.key || '',
+          fileName: file?.metadata?.fileName || '',
+          metadata: {
+            id: file?.metadata?.id || '',
+            fileId: file?.metadata?.fileId || '',
+            fileName: file?.metadata?.fileName || '',
+          },
+        };
+      },
+      findFileByMoveId(id) {
+        const target = String(id || '').trim();
+        if (!target) return null;
+        return this.tableData.find((file) => {
+          return (
+            this.getFileMoveId(file) === target ||
+            String(file?.name || '') === target ||
+            String(file?.id || '') === target
+          );
+        }) || null;
+      },
+      isRowInMoveSet(row, idSet) {
+        return (
+          idSet.has(this.getFileMoveId(row)) ||
+          idSet.has(String(row?.name || '')) ||
+          idSet.has(String(row?.id || ''))
+        );
+      },
       switchViewMode(mode) {
         if (!['grid', 'list'].includes(mode)) return;
         this.viewMode = mode;
@@ -2187,9 +2673,11 @@
           const response = await fetch(`./api/manage/folders${query ? `?${query}` : ''}`, { method: 'GET', credentials: 'include' });
           const data = await response.json();
           this.folders = Array.isArray(data?.folders) ? data.folders : [];
+          return true;
         } catch (error) {
           this.folders = [];
           this.$message.error('目录列表加载失败');
+          return false;
         } finally {
           this.folderLoading = false;
         }
@@ -2357,228 +2845,96 @@
           if (error !== 'cancel' && error !== 'close') this.$message.error(error.message || '目录删除失败');
         }
       },
-      async moveSelectedToFolder() {
-        if (this.selectedFiles.length === 0) {
+      moveSelectedToFolder() {
+        this.openMoveDialog(this.selectedFiles);
+      },
+      openMoveDialog(files = []) {
+        const candidates = Array.isArray(files) ? files.filter(Boolean) : [];
+        if (candidates.length === 0) {
           this.$message.warning('请先选择文件');
           return;
         }
-        let previousRows = null;
-        let previousFolders = null;
+        this.moveDialogFiles = candidates.slice();
+        this.moveDialogTargetPath = this.normalizeFolderPath(this.folderPath || '');
+        this.moveDialogFolderSearch = '';
+        this.moveDialogNewFolderPath = this.moveDialogTargetPath ? `${this.moveDialogTargetPath}/新目录` : '新目录';
+        this.moveDialogVisible = true;
+      },
+      async refreshMoveDialogFolders(showMessage = false) {
+        if (this.moveDialogFoldersLoading) return;
+        this.moveDialogFoldersLoading = true;
         try {
-          const prompt = await this.$prompt('请输入目标目录路径（留空表示根目录）', '移动文件', {
-            inputValue: this.folderPath || '',
-            confirmButtonText: '移动',
-            cancelButtonText: '取消',
-          });
-          const targetFolderPath = this.normalizeFolderPath(prompt.value || '');
-          const ids = this.selectedFiles.map((item) => item.name);
-          const hasEffectiveMove = ids.some((id) => {
-            const file = this.tableData.find((item) => item.name === id);
-            const current = this.normalizeFolderPath(file?.metadata?.folderPath || '');
-            return current !== targetFolderPath;
-          });
-          if (!hasEffectiveMove) {
-            this.$message.info('所选文件已在当前目录');
-            return;
-          }
-
-          const idSet = new Set(ids);
-          previousRows = this.tableData.map((file) => ({
-            ...file,
-            metadata: { ...(file.metadata || {}) },
-          }));
-          previousFolders = this.cloneFoldersSnapshot();
-          const normalizedCurrentFolder = this.normalizeFolderPath(this.folderPath);
-          const movedRows = this.tableData
-            .filter((row) => idSet.has(row.name))
-            .map((row) => ({
-              name: row.name,
-              sourceFolderPath: this.normalizeFolderPath(row?.metadata?.folderPath || ''),
-            }));
-
-          this.tableData = this.tableData
-            .map((row) => {
-              if (!idSet.has(row.name)) return row;
-              return {
-                ...row,
-                metadata: {
-                  ...(row.metadata || {}),
-                  folderPath: targetFolderPath,
-                },
-                selected: false,
-              };
-            })
-            .filter((row) => this.normalizeFolderPath(row?.metadata?.folderPath || '') === normalizedCurrentFolder);
-
-          movedRows.forEach((moved) => {
-            const sourceNode = (this.folders || []).find((folder) => {
-              const candidate = this.normalizeFolderPath(folder.path || folder.folderPath || '');
-              return candidate === moved.sourceFolderPath;
-            });
-            if (sourceNode && moved.sourceFolderPath !== targetFolderPath) {
-              sourceNode.fileCount = Math.max(0, Number(sourceNode.fileCount || 0) - 1);
-            }
-          });
-          if (targetFolderPath) {
-            this.ensureFolderBranchLocal(targetFolderPath);
-            const targetNode = (this.folders || []).find((folder) => {
-              const candidate = this.normalizeFolderPath(folder.path || folder.folderPath || '');
-              return candidate === targetFolderPath;
-            });
-            if (targetNode) {
-              const addCount = movedRows.filter((item) => item.sourceFolderPath !== targetFolderPath).length;
-              targetNode.fileCount = Number(targetNode.fileCount || 0) + addCount;
-            }
-          }
-          this.sortFoldersLocal();
-          this.updateStats();
-
-          const result = await fetch('./api/manage/files/move-folder', {
+          const refreshed = await this.fetchFolders();
+          if (showMessage && refreshed) this.$message.success('已获取最新后端目录');
+          if (showMessage && !refreshed) this.$message.error('目录刷新失败，请稍后重试');
+        } catch (error) {
+          if (showMessage) this.$message.error(error?.message || '目录刷新失败');
+        } finally {
+          this.moveDialogFoldersLoading = false;
+        }
+      },
+      selectMoveDialogFolder(path = '') {
+        this.moveDialogTargetPath = this.normalizeFolderPath(path);
+      },
+      async createFolderAndMoveSelected() {
+        const path = this.normalizeFolderPath(this.moveDialogNewFolderPath);
+        if (!path) {
+          this.$message.warning('请输入要新建的目录路径');
+          return;
+        }
+        this.moveDialogLoading = true;
+        const previousFolders = this.cloneFoldersSnapshot();
+        let folderCreated = false;
+        try {
+          this.ensureFolderBranchLocal(path);
+          const response = await fetch('./api/manage/folders', {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ids, targetFolderPath }),
+            body: JSON.stringify({ path }),
           }).then((r) => r.json());
-          if (!result.success) throw new Error(result.error || '移动失败');
-          this.$message.success(`已移动 ${result.moved || 0} 个文件到 ${targetFolderPath || '根目录'}`);
-          this.clearFolderCache();
-          await this.fetchFolders();
+          if (!response?.success) throw new Error(response?.error || '目录创建失败');
+          folderCreated = true;
+          this.moveDialogTargetPath = path;
+          const moved = await this.moveFilesToFolder(this.moveDialogFiles, path);
+          if (moved) this.moveDialogVisible = false;
         } catch (error) {
-          if (error !== 'cancel' && error !== 'close') {
-            if (previousRows) {
-              this.tableData = previousRows;
-            }
-            if (previousFolders) {
-              this.folders = previousFolders;
-            }
-            this.updateStats();
-            this.$message.error(error.message || '移动文件失败');
+          if (!folderCreated) {
+            this.folders = previousFolders;
+            this.sortFoldersLocal();
           }
+          this.$message.error(error.message || '新建并移动失败');
+        } finally {
+          this.moveDialogLoading = false;
         }
       },
-      resetViewConditions() {
-        this.search = '';
-        this.filterOption = 'all';
-        this.storageFilter = 'all';
-        this.fileType = 'all';
-        this.folderPath = '';
-        this.currentPage = 1;
-        this.refreshFileList({ syncFolders: true });
-        this.$message.success('已恢复默认筛选');
-      },
-      resolveDraggedIds(item) {
-        if (!item || !item.name) return [];
-        if (item.selected) {
-          const selected = this.selectedFiles.map((file) => file.name).filter(Boolean);
-          if (selected.length > 0) return selected;
-        }
-        return [item.name];
-      },
-      handleFileDragStart(item, event) {
-        const ids = this.resolveDraggedIds(item);
-        if (!ids.length) return;
-        if (event?.currentTarget?.classList) {
-          event.currentTarget.classList.add('dragging-file-card');
-        }
-        this.dragState.active = true;
-        this.dragState.fileIds = ids;
-        this.dragState.targetPath = null;
-        document.body.classList.add('is-dragging-files');
-        if (event && event.dataTransfer) {
-          event.dataTransfer.effectAllowed = 'move';
-          event.dataTransfer.setData('application/x-kvault-files', JSON.stringify(ids));
-          event.dataTransfer.setData('text/plain', ids.join(','));
-          const dragGhost = document.createElement('div');
-          dragGhost.textContent = ids.length > 1 ? `移动 ${ids.length} 个文件` : (item?.metadata?.fileName || item?.name || '移动文件');
-          dragGhost.style.cssText = 'position:fixed;top:-9999px;left:-9999px;padding:8px 12px;border-radius:999px;background:rgba(19,29,48,0.92);color:#fff;font-size:12px;pointer-events:none;z-index:9999;';
-          document.body.appendChild(dragGhost);
-          event.dataTransfer.setDragImage(dragGhost, 18, 16);
-          requestAnimationFrame(() => dragGhost.remove());
-        }
-      },
-      handleFileDragEnd() {
-        if (this.dragState.leaveTimer) {
-          clearTimeout(this.dragState.leaveTimer);
-          this.dragState.leaveTimer = null;
-        }
-        if (this.dragState.rafId) {
-          cancelAnimationFrame(this.dragState.rafId);
-          this.dragState.rafId = null;
-        }
-        this.dragState.active = false;
-        this.dragState.fileIds = [];
-        this.dragState.targetPath = null;
-        document.body.classList.remove('is-dragging-files');
-        document.querySelectorAll('.dragging-file-card').forEach((node) => node.classList.remove('dragging-file-card'));
-      },
-      handleFolderDragOver(path, event) {
-        if (!this.dragState.active) return;
-        if (event && event.dataTransfer) {
-          event.dataTransfer.dropEffect = 'move';
-        }
-      },
-      handleFolderDragEnter(path) {
-        if (!this.dragState.active) return;
-        const normalizedPath = this.normalizeFolderPath(path);
-        if (this.dragState.leaveTimer) {
-          clearTimeout(this.dragState.leaveTimer);
-          this.dragState.leaveTimer = null;
-        }
-        if (this.dragState.targetPath === normalizedPath) return;
-        if (this.dragState.rafId) {
-          cancelAnimationFrame(this.dragState.rafId);
-          this.dragState.rafId = null;
-        }
-        this.dragState.rafId = requestAnimationFrame(() => {
-          this.dragState.targetPath = normalizedPath;
-          this.dragState.rafId = null;
-        });
-      },
-      handleFolderDragLeave(path, event) {
-        if (!this.dragState.active) return;
-        const currentTarget = event?.currentTarget;
-        const relatedTarget = event?.relatedTarget;
-        if (currentTarget && relatedTarget && currentTarget.contains(relatedTarget)) {
-          return;
-        }
-        const normalizedPath = this.normalizeFolderPath(path);
-        if (this.dragState.leaveTimer) {
-          clearTimeout(this.dragState.leaveTimer);
-        }
-        this.dragState.leaveTimer = setTimeout(() => {
-          if (this.dragState.targetPath === normalizedPath) {
-            this.dragState.targetPath = null;
-          }
-          this.dragState.leaveTimer = null;
-        }, 60);
-      },
-      extractDragIds(event) {
-        if (this.dragState.fileIds.length > 0) return this.dragState.fileIds;
-        const raw = event?.dataTransfer?.getData('application/x-kvault-files') || '';
-        if (!raw) return [];
+      async confirmMoveDialog() {
+        this.moveDialogLoading = true;
         try {
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed.map((item) => String(item || '')).filter(Boolean) : [];
-        } catch {
-          return [];
+          const moved = await this.moveFilesToFolder(this.moveDialogFiles, this.moveDialogTargetPath);
+          if (moved) this.moveDialogVisible = false;
+        } catch (error) {
+          this.$message.error(error.message || '移动文件失败');
+        } finally {
+          this.moveDialogLoading = false;
         }
       },
-      async handleFolderDrop(path, event) {
-        const targetFolderPath = this.normalizeFolderPath(path);
-        const ids = this.extractDragIds(event);
-        if (!ids.length) {
-          this.handleFileDragEnd();
-          return;
+      async moveFilesToFolder(files, targetFolderPathValue) {
+        const selected = Array.isArray(files) ? files.filter(Boolean) : [];
+        if (selected.length === 0) {
+          throw new Error('请先选择文件');
         }
-
+        const targetFolderPath = this.normalizeFolderPath(targetFolderPathValue || '');
+        const filesPayload = selected.map((item) => this.getFileMovePayload(item));
+        const ids = filesPayload.map((item) => item.id).filter(Boolean);
         const hasEffectiveMove = ids.some((id) => {
-          const file = this.tableData.find((item) => item.name === id);
+          const file = this.findFileByMoveId(id);
           const current = this.normalizeFolderPath(file?.metadata?.folderPath || '');
           return current !== targetFolderPath;
         });
         if (!hasEffectiveMove) {
-          this.handleFileDragEnd();
-          return;
+          this.$message.info('所选文件已在目标目录');
+          return false;
         }
 
         const idSet = new Set(ids);
@@ -2589,16 +2945,15 @@
         const previousFolders = this.cloneFoldersSnapshot();
         const normalizedCurrentFolder = this.normalizeFolderPath(this.folderPath);
         const movedRows = this.tableData
-          .filter((row) => idSet.has(row.name))
+          .filter((row) => this.isRowInMoveSet(row, idSet))
           .map((row) => ({
-            name: row.name,
+            name: this.getFileMoveId(row),
             sourceFolderPath: this.normalizeFolderPath(row?.metadata?.folderPath || ''),
           }));
 
-        // 先本地更新，拖拽交互更流畅
         this.tableData = this.tableData
           .map((row) => {
-            if (!idSet.has(row.name)) return row;
+            if (!this.isRowInMoveSet(row, idSet)) return row;
             return {
               ...row,
               metadata: {
@@ -2638,9 +2993,234 @@
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ids, targetFolderPath }),
+            body: JSON.stringify({ ids, files: filesPayload, targetFolderPath }),
+          }).then((r) => r.json());
+          if (!result.success) throw new Error(result.error || '移动失败');
+          if (Number(result.moved || 0) === 0) {
+            throw new Error('后端没有移动任何文件，请刷新列表后重试');
+          }
+          this.$message.success(`已移动 ${result.moved || 0} 个文件到 ${targetFolderPath || '根目录'}`);
+          this.clearFolderCache();
+          await this.fetchFolders();
+          return true;
+        } catch (error) {
+          this.tableData = previousRows;
+          this.folders = previousFolders;
+          this.updateStats();
+          throw error;
+        }
+      },
+      resetViewConditions() {
+        this.search = '';
+        this.filterOption = 'all';
+        this.storageFilter = 'all';
+        this.fileType = 'all';
+        this.folderPath = '';
+        this.currentPage = 1;
+        this.refreshFileList({ syncFolders: true });
+        this.$message.success('已恢复默认筛选');
+      },
+      resolveDraggedIds(item) {
+        if (!item || !item.name) return [];
+        if (item.selected) {
+          const selected = this.selectedFiles.map((file) => this.getFileMoveId(file)).filter(Boolean);
+          if (selected.length > 0) return selected;
+        }
+        return [this.getFileMoveId(item)];
+      },
+      handleFileDragStart(item, event) {
+        const ids = this.resolveDraggedIds(item);
+        if (!ids.length) return;
+        if (event?.currentTarget?.classList) {
+          event.currentTarget.classList.add('dragging-file-card');
+        }
+        this.dragState.active = true;
+        this.dragState.fileIds = ids;
+        this.dragState.targetPath = null;
+        document.body.classList.add('is-dragging-files');
+        if (event && event.dataTransfer) {
+          event.dataTransfer.effectAllowed = 'move';
+          event.dataTransfer.setData('application/x-kvault-files', JSON.stringify(ids));
+          event.dataTransfer.setData('text/plain', ids.join(','));
+          const dragGhost = document.createElement('div');
+          dragGhost.textContent = ids.length > 1 ? `移动 ${ids.length} 个文件` : (item?.metadata?.fileName || item?.name || '移动文件');
+          dragGhost.style.cssText = 'position:fixed;top:-9999px;left:-9999px;padding:8px 12px;border-radius:999px;background:rgba(19,29,48,0.92);color:#fff;font-size:12px;pointer-events:none;z-index:9999;';
+          document.body.appendChild(dragGhost);
+          event.dataTransfer.setDragImage(dragGhost, 18, 16);
+          requestAnimationFrame(() => dragGhost.remove());
+        }
+      },
+      handleFileDragEnd() {
+        if (this.dragState.leaveTimer) {
+          clearTimeout(this.dragState.leaveTimer);
+          this.dragState.leaveTimer = null;
+        }
+        if (this.dragState.rafId) {
+          cancelAnimationFrame(this.dragState.rafId);
+          this.dragState.rafId = null;
+        }
+        this.dragState.active = false;
+        this.dragState.fileIds = [];
+        this.dragState.targetPath = null;
+        document.body.classList.remove('is-dragging-files');
+        document.querySelectorAll('.dragging-file-card').forEach((node) => node.classList.remove('dragging-file-card'));
+      },
+      handleFolderSidebarDragOver(event) {
+        if (!this.dragState.active) return;
+        if (event?.dataTransfer) {
+          event.dataTransfer.dropEffect = 'move';
+        }
+      },
+      handleFolderDragOver(path, event) {
+        if (!this.dragState.active) return;
+        if (event && event.dataTransfer) {
+          event.dataTransfer.dropEffect = 'move';
+        }
+        this.handleFolderDragEnter(path);
+      },
+      handleFolderDragEnter(path) {
+        if (!this.dragState.active) return;
+        const normalizedPath = this.normalizeFolderPath(path);
+        if (this.dragState.leaveTimer) {
+          clearTimeout(this.dragState.leaveTimer);
+          this.dragState.leaveTimer = null;
+        }
+        if (this.dragState.targetPath === normalizedPath) return;
+        if (this.dragState.rafId) {
+          cancelAnimationFrame(this.dragState.rafId);
+          this.dragState.rafId = null;
+        }
+        this.dragState.rafId = requestAnimationFrame(() => {
+          this.dragState.targetPath = normalizedPath;
+          this.dragState.rafId = null;
+        });
+      },
+      handleFolderDragLeave(path, event) {
+        if (!this.dragState.active) return;
+        const currentTarget = event?.currentTarget;
+        const relatedTarget = event?.relatedTarget;
+        if (currentTarget && relatedTarget && currentTarget.contains(relatedTarget)) {
+          return;
+        }
+        const normalizedPath = this.normalizeFolderPath(path);
+        if (this.dragState.leaveTimer) {
+          clearTimeout(this.dragState.leaveTimer);
+        }
+        this.dragState.leaveTimer = setTimeout(() => {
+          if (this.dragState.targetPath === normalizedPath) {
+            this.dragState.targetPath = null;
+          }
+          this.dragState.leaveTimer = null;
+        }, 60);
+      },
+      extractDragIds(event) {
+        if (this.dragState.fileIds.length > 0) return this.dragState.fileIds;
+        const raw = event?.dataTransfer?.getData('application/x-kvault-files') || '';
+        if (!raw) {
+          const plain = event?.dataTransfer?.getData('text/plain') || '';
+          return plain
+            .split(',')
+            .map((item) => String(item || '').trim())
+            .filter(Boolean);
+        }
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed.map((item) => String(item || '')).filter(Boolean) : [];
+        } catch {
+          return raw
+            .split(',')
+            .map((item) => String(item || '').trim())
+            .filter(Boolean);
+        }
+      },
+      async handleFolderDrop(path, event) {
+        const targetFolderPath = this.normalizeFolderPath(path);
+        this.dragState.targetPath = targetFolderPath;
+        const ids = this.extractDragIds(event);
+        if (!ids.length) {
+          this.handleFileDragEnd();
+          return;
+        }
+        const filesPayload = ids
+          .map((id) => this.findFileByMoveId(id))
+          .filter(Boolean)
+          .map((file) => this.getFileMovePayload(file));
+
+        const hasEffectiveMove = ids.some((id) => {
+          const file = this.findFileByMoveId(id);
+          const current = this.normalizeFolderPath(file?.metadata?.folderPath || '');
+          return current !== targetFolderPath;
+        });
+        if (!hasEffectiveMove) {
+          this.$message.info(`文件已在 ${targetFolderPath || '根目录'}`);
+          this.handleFileDragEnd();
+          return;
+        }
+
+        const idSet = new Set(ids);
+        const previousRows = this.tableData.map((file) => ({
+          ...file,
+          metadata: { ...(file.metadata || {}) },
+        }));
+        const previousFolders = this.cloneFoldersSnapshot();
+        const normalizedCurrentFolder = this.normalizeFolderPath(this.folderPath);
+        const movedRows = this.tableData
+          .filter((row) => this.isRowInMoveSet(row, idSet))
+          .map((row) => ({
+            name: this.getFileMoveId(row),
+            sourceFolderPath: this.normalizeFolderPath(row?.metadata?.folderPath || ''),
+          }));
+
+        // 先本地更新，拖拽交互更流畅
+        this.tableData = this.tableData
+          .map((row) => {
+            if (!this.isRowInMoveSet(row, idSet)) return row;
+            return {
+              ...row,
+              metadata: {
+                ...(row.metadata || {}),
+                folderPath: targetFolderPath,
+              },
+              selected: false,
+            };
+          })
+          .filter((row) => this.normalizeFolderPath(row?.metadata?.folderPath || '') === normalizedCurrentFolder);
+
+        movedRows.forEach((moved) => {
+          const sourceNode = (this.folders || []).find((folder) => {
+            const candidate = this.normalizeFolderPath(folder.path || folder.folderPath || '');
+            return candidate === moved.sourceFolderPath;
+          });
+          if (sourceNode && moved.sourceFolderPath !== targetFolderPath) {
+            sourceNode.fileCount = Math.max(0, Number(sourceNode.fileCount || 0) - 1);
+          }
+        });
+        if (targetFolderPath) {
+          this.ensureFolderBranchLocal(targetFolderPath);
+          const targetNode = (this.folders || []).find((folder) => {
+            const candidate = this.normalizeFolderPath(folder.path || folder.folderPath || '');
+            return candidate === targetFolderPath;
+          });
+          if (targetNode) {
+            const addCount = movedRows.filter((item) => item.sourceFolderPath !== targetFolderPath).length;
+            targetNode.fileCount = Number(targetNode.fileCount || 0) + addCount;
+          }
+        }
+        this.sortFoldersLocal();
+        this.updateStats();
+        this.$message.info(`正在移动 ${ids.length} 个文件到 ${targetFolderPath || '根目录'}...`, { duration: 1200 });
+
+        try {
+          const result = await fetch('./api/manage/files/move-folder', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids, files: filesPayload, targetFolderPath }),
           }).then((r) => r.json());
           if (!result.success) throw new Error(result.error || '拖拽移动失败');
+          if (Number(result.moved || 0) === 0) {
+            throw new Error('后端没有移动任何文件，请刷新列表后重试');
+          }
           const folderLabel = targetFolderPath || '根目录';
           this.$message.success(`已移动 ${result.moved || 0} 个文件到 ${folderLabel}`);
           this.clearFolderCache();
@@ -2763,6 +3343,7 @@
       
       // 打开预览 - 使用模态框（与首页保持一致，不跳转新标签页）
       openPreview(item) {
+        this.revealPreview(item);
         const fileName = item.metadata?.fileName || item.name;
         const fileUrl = `${this.baseURL}/file/${item.name}`;
         const fileType = this.getActualFileType(item.name);
@@ -2778,11 +3359,16 @@
           return;
         }
 
-        // 视频/音频/文档类型 - iframe 预览
-        const PREVIEW_SERVICE_BASE = 'https://www.katelya.eu.org';
-        const targetUrl = encodeURIComponent(fileUrl);
-        const targetTitle = encodeURIComponent(fileName);
-        const iframeSrc = `${PREVIEW_SERVICE_BASE}/preview?url=${targetUrl}&title=${targetTitle}&autoplay=1`;
+        // 视频/音频/文档类型 - 使用本项目的 local preview iframe
+        const previewParams = new URLSearchParams({
+          url: fileUrl,
+          title: fileName,
+          autoplay: '0',
+          embed: '1',
+          size: String(item.metadata?.fileSize || 0),
+          type: fileType
+        });
+        const iframeSrc = `${this.baseURL}/preview.html?${previewParams.toString()}`;
 
         this.previewData = {
           type: 'iframe',
@@ -3640,17 +4226,24 @@
         const ext = filename.split('.').pop().toLowerCase();
         const iconMap = {
           'pdf': 'fas fa-file-pdf',
-          'doc,docx': 'fas fa-file-word',
-          'xls,xlsx,csv': 'fas fa-file-excel',
-          'ppt,pptx': 'fas fa-file-powerpoint',
-          'txt,md,log': 'fas fa-file-lines',
-          'zip,rar,7z,tar,gz': 'fas fa-file-zipper',
-          'html,htm,css,js,ts,jsx,tsx,vue,php,py,java,c,cpp,h,hpp,cs,go,rs,rb,pl,sh,sql': 'fas fa-file-code',
-          'json,xml,yaml,yml,toml': 'fas fa-file-code',
-          'mp4,avi,mov,wmv,flv,mkv,webm': 'fas fa-file-video',
-          'mp3,wav,ogg,flac,aac,m4a,wma': 'fas fa-file-audio',
-          'jpg,jpeg,png,gif,bmp,webp,svg,ico': 'fas fa-file-image',
+          'ofd,typ,typst': 'fas fa-file-pdf',
+          'doc,dot,docx,docm,dotx,dotm,rtf,odt': 'fas fa-file-word',
+          'xls,xlsb,xlsx,xlsm,xlt,xltx,xltm,ods,fods,numbers,csv,tsv': 'fas fa-file-excel',
+          'ppt,pptx,pptm,ppsx,ppsm,potx,potm,odp': 'fas fa-file-powerpoint',
+          'txt,md,markdown,log,patch,diff,bundle,bdl': 'fas fa-file-lines',
+          'zip,zipx,jar,war,ear,rar,7z,tar,tgz,gz,gzip,bz2,bzip2,tbz,tbz2,xz,txz,lzma,zst,cab,iso': 'fas fa-file-zipper',
+          'html,htm,css,js,ts,jsx,tsx,vue,php,py,java,c,cpp,h,hpp,cs,go,rs,rb,pl,sh,sql,bash,cc': 'fas fa-file-code',
+          'json,jsonc,json5,xml,yaml,yml,toml,proto,hcl,graphql,gv': 'fas fa-file-code',
+          'eml,msg,mbox': 'fas fa-envelope',
+          'mp4,avi,mov,wmv,flv,mkv,webm,m4v,m3u8,3gp,ts,mts,m2ts': 'fas fa-file-video',
+          'mp3,mpeg,wav,ogg,oga,flac,aac,m4a,wma,ape,opus,weba,midi,mid,aif,aiff': 'fas fa-file-audio',
+          'jpg,jpeg,jfif,png,apng,gif,bmp,webp,svg,ico,tif,tiff,heic,heif,avif,jxl': 'fas fa-file-image',
           'psd,ai,eps,cdr': 'fas fa-file-image',
+          'ttf,otf,woff,woff2': 'fas fa-font',
+          'sqlite,sqlite3,db,parquet,avro,wasm,webarchive': 'fas fa-database',
+          'dwg,dxf,dwf,dwfx,xps': 'fas fa-drafting-compass',
+          'glb,gltf,obj,stl,ply,fbx,dae,3ds,3mf,usd,usdz,kmz,step,stp,iges,igs,ifc': 'fas fa-cube',
+          'xmind,drawio,dio,excalidraw,mermaid,mmd,plantuml,puml,epub,umd,geojson,kml,gpx,shp,olb,dra,gds,oas,oasis': 'fas fa-diagram-project',
           'exe,msi,app,dmg,deb,rpm': 'fas fa-file-arrow-down'
         };
         for(const [exts, icon] of Object.entries(iconMap)) {
@@ -4200,14 +4793,64 @@
           bindUpload('uiUploadLoginBtn', 'uiUploadLoginInput', 'uiLoginBgUrl');
         });
       },
-      shouldShowImage(item) {
+      getPreviewKey(item) {
+        return String(item?.name || item?.metadata?.fileName || '');
+      },
+      isPreviewRevealed(item) {
+        const key = this.getPreviewKey(item);
+        return Boolean(key && this.revealedPreviewKeys[key]);
+      },
+      revealPreview(item) {
+        const key = this.getPreviewKey(item);
+        if (!key || this.isPreviewRevealed(item)) return;
+        this.$set(this.revealedPreviewKeys, key, true);
+      },
+      isPreviewGated(item, explicitType = '') {
+        return !this.isPreviewRevealed(item) && !this.shouldAutoLoadPreview(item, explicitType);
+      },
+      shouldAutoLoadPreview(item, explicitType = '') {
+        if (!item) return false;
+        if (this.isNsfwContent(item)) return false;
         if (this.loadMode === 'noImage') return false;
-        if (this.loadMode === 'dataSaver') {
-          // 省流模式：跳过大于5MB的图片
-          const sizeLimit = 5 * 1024 * 1024;
-          return (item.metadata?.fileSize || 0) <= sizeLimit;
+
+        const type = explicitType || this.getActualFileType(item.name);
+        const size = Number(item.metadata?.fileSize || 0);
+
+        if (type === 'video' || type === 'audio') {
+          return false;
         }
-        return true;
+
+        if (type === 'image') {
+          const normalImageLimit = 12 * 1024 * 1024;
+          const dataSaverLimit = 5 * 1024 * 1024;
+          if (this.loadMode === 'dataSaver') return size > 0 && size <= dataSaverLimit;
+          return size <= 0 || size <= normalImageLimit;
+        }
+
+        return false;
+      },
+      getPreviewGateTitle(item, explicitType = '') {
+        if (this.isNsfwContent(item)) return '敏感预览已模糊';
+        const type = explicitType || this.getActualFileType(item.name);
+        const labels = {
+          image: '点击唤醒图片预览',
+          video: '点击唤醒视频预览',
+          audio: '点击唤醒音频预览',
+        };
+        return labels[type] || '预览已暂停';
+      },
+      getPreviewGateSubtitle(item, explicitType = '') {
+        const size = Number(item?.metadata?.fileSize || 0);
+        const sizeLabel = size > 0 ? ` · ${this.formatFileSize(size)}` : '';
+        const type = explicitType || this.getActualFileType(item?.name || '');
+        if (this.isNsfwContent(item)) return `点击解除模糊并加载粗预览${sizeLabel}`;
+        if (this.loadMode === 'noImage') return `无图模式，本次点击后加载${sizeLabel}`;
+        if (type === 'video') return `先不读取媒体资源，点击后只加载元数据${sizeLabel}`;
+        if (type === 'audio') return `先不读取音频资源，点击后加载播放器${sizeLabel}`;
+        return `点击后再读取文件资源${sizeLabel}`;
+      },
+      shouldShowImage(item) {
+        return this.shouldAutoLoadPreview(item, 'image') || this.isPreviewRevealed(item);
       },
       // 检查是否为NSFW内容
       isNsfwContent(item) {

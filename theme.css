@@ -290,6 +290,7 @@ html[data-theme="dark"] .theme-admin-toggle i {
   --ui-border-rgb-dark: 92, 105, 126;
   --ui-card-opacity: 0.86;
   --ui-card-blur: 14px;
+  --ui-card-backdrop-filter: blur(var(--ui-card-blur)) saturate(115%);
   --ui-noise-opacity: 0;
   --ui-shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.09);
   --ui-shadow-soft-dark: 0 14px 32px rgba(0, 0, 0, 0.34);
@@ -340,7 +341,9 @@ html[data-theme="dark"] body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .ui-bg-canvas-layer {
@@ -412,8 +415,19 @@ body > .container {
   background: rgba(var(--ui-surface-rgb), var(--ui-card-opacity)) !important;
   border-color: rgba(var(--ui-border-rgb), 0.46) !important;
   box-shadow: var(--ui-shadow-soft) !important;
-  backdrop-filter: blur(var(--ui-card-blur)) saturate(115%);
-  -webkit-backdrop-filter: blur(var(--ui-card-blur)) saturate(115%);
+  backdrop-filter: var(--ui-card-backdrop-filter);
+  -webkit-backdrop-filter: var(--ui-card-backdrop-filter);
+}
+
+.el-dialog__header,
+.el-dialog__body,
+.el-dialog__footer,
+.el-message-box__content,
+.el-message-box__header,
+.el-message-box__btns {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 html[data-theme="dark"] .header,

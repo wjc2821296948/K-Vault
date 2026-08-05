@@ -31,8 +31,11 @@ jobs:
           GITHUB_REPO=ci-owner/ci-repo
           EOF
 
-      - name: Build and start api service
-        run: docker compose up -d --build api
+      - name: Build single runtime image
+        run: docker build -t k-vault:ci .
+
+      - name: Start single-image stack
+        run: KVAULT_IMAGE=k-vault:ci docker compose up -d
 
       - name: Run Docker smoke checks
         run: npm run docker:smoke:ci
@@ -41,12 +44,12 @@ jobs:
         if: failure()
         run: |
           mkdir -p .artifacts
-          docker compose exec -T api sh -lc "wget -qO- http://localhost:8787/api/status" > .artifacts/api-status.json || true
-          docker compose exec -T api sh -lc "node -e \"const { createContainer }=require('./lib/container'); const c=createContainer(process.env); console.log(JSON.stringify(c.storageRepo.list(false).map(x=>({id:x.id,type:x.type,name:x.name,enabled:x.enabled,isDefault:x.isDefault})), null, 2));\"" > .artifacts/storage-profiles.json || true
+          docker compose exec -T k-vault sh -lc "wget -qO- http://localhost:8080/api/status" > .artifacts/api-status.json || true
+          docker compose exec -T k-vault sh -lc "cd /app/server && node -e \"const { createContainer }=require('./lib/container'); const c=createContainer(process.env); console.log(JSON.stringify(c.storageRepo.list(false).map(x=>({id:x.id,type:x.type,name:x.name,enabled:x.enabled,isDefault:x.isDefault})), null, 2));\"" > .artifacts/storage-profiles.json || true
 
-      - name: Show api logs on failure
+      - name: Show runtime logs on failure
         if: failure()
-        run: docker compose logs --no-color api
+        run: docker compose logs --no-color k-vault
 
       - name: Upload smoke diagnostics artifact
         if: failure()

@@ -20,6 +20,7 @@ import {
 } from '../../utils/telegram.js';
 
 const TEMP_CHUNK_PREFIX = 'chunk-upload';
+const MB = 1024 * 1024;
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -53,6 +54,10 @@ export async function onRequestPost(context) {
     }
 
     const chunkBackend = resolveChunkBackend(taskData, env);
+    const completionValidation = validateCompletionTarget(taskData.storageMode || 'telegram', Number(taskData.fileSize || 0));
+    if (!completionValidation.ok) {
+      return jsonResponse({ error: completionValidation.message, code: completionValidation.code }, completionValidation.status);
+    }
 
     if (!isKvWriteMinimized(env)) {
       if (!Array.isArray(taskData.uploadedChunks) || taskData.uploadedChunks.length !== totalChunks) {
@@ -274,6 +279,34 @@ function getMissingChunks(uploaded, total) {
   return missing;
 }
 
+function validateCompletionTarget(storageMode, fileSize) {
+  if (storageMode === 'telegram' && fileSize > 20 * MB) {
+    return {
+      ok: false,
+      status: 400,
+      code: 'TELEGRAM_CHUNK_UNSUPPORTED',
+      message: 'Cloudflare Pages 上的 Telegram 网页上传仅适合 20MB 以内文件。更大的文件请切换到 R2/S3/WebDAV/GitHub，或把文件直接发到 Telegram 后使用 Webhook 回链。',
+    };
+  }
+  if (storageMode === 'discord' && fileSize > 25 * MB) {
+    return {
+      ok: false,
+      status: 413,
+      code: 'DISCORD_FILE_TOO_LARGE',
+      message: 'Discord 默认上传上限按 25MB 处理；更大的文件请使用 R2/S3/WebDAV/GitHub。',
+    };
+  }
+  if (storageMode === 'huggingface' && fileSize > 35 * MB) {
+    return {
+      ok: false,
+      status: 413,
+      code: 'HUGGINGFACE_FILE_TOO_LARGE',
+      message: 'HuggingFace 普通上传链路建议控制在 35MB 以内；更大的文件请使用 LFS 或其他对象存储。',
+    };
+  }
+  return { ok: true };
+}
+
 function isKvWriteMinimized(env) {
   return env.MINIMIZE_KV_WRITES === 'true';
 }
@@ -341,7 +374,7 @@ async function uploadToTelegram(file, env) {
     const data = await response.json();
 
     if (!response.ok || !data.ok) {
-      if (apiEndpoint === 'sendPhoto' || apiEndpoint === 'sendAudio') {
+      if (apiEndpoint === 'sendAudio') {
         const docFormData = new FormData();
         docFormData.append('chat_id', env.TG_Chat_ID);
         docFormData.append('document', file);
@@ -353,7 +386,7 @@ async function uploadToTelegram(file, env) {
         const docData = await docResponse.json();
         if (docResponse.ok && docData.ok) {
           const fileId = pickTelegramFileId(docData);
-          if (!fileId) return { success: false, error: 'Failed to get Telegram file ID' };
+          if (!fileId) return { success: false, error: 'Telegram 已接收文件，但未返回可用的文件 ID' };
           return {
             success: true,
             fileId,
@@ -361,11 +394,11 @@ async function uploadToTelegram(file, env) {
           };
         }
       }
-      return { success: false, error: data.description || 'Upload failed' };
+      return { success: false, error: data.description || '上传失败' };
     }
 
     const fileId = pickTelegramFileId(data);
-    if (!fileId) return { success: false, error: 'Failed to get Telegram file ID' };
+    if (!fileId) return { success: false, error: 'Telegram 已接收文件，但未返回可用的文件 ID' };
     return {
       success: true,
       fileId,

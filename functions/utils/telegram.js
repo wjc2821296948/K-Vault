@@ -59,7 +59,7 @@ export function buildTelegramFileUrl(env, filePath) {
 export function getTelegramUploadMethodAndField(contentType = "") {
   const type = String(contentType || "").toLowerCase();
   if (type.startsWith("image/")) {
-    return { method: "sendPhoto", field: "photo" };
+    return { method: "sendDocument", field: "document" };
   }
   if (type.startsWith("audio/")) {
     return { method: "sendAudio", field: "audio" };
@@ -82,6 +82,7 @@ export function pickTelegramFileId(responseData) {
   if (result.video?.file_id) return result.video.file_id;
   if (result.audio?.file_id) return result.audio.file_id;
   if (result.voice?.file_id) return result.voice.file_id;
+  if (result.sticker?.file_id) return result.sticker.file_id;
   if (result.animation?.file_id) return result.animation.file_id;
   if (result.video_note?.file_id) return result.video_note.file_id;
   return null;

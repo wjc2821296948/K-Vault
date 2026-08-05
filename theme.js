@@ -783,9 +783,28 @@
   function applyCompatibilityVars(next, darkMode) {
     var opacity = clampNumber(next.cardOpacity, 0, 100) / 100;
     var blur = Math.round(clampNumber(next.cardBlur, 0, 32));
-    var surfaceAlpha = darkMode
-      ? Math.max(0.5, Math.min(0.94, opacity))
-      : Math.max(0.28, Math.min(0.98, opacity));
+    var transparentCards = opacity <= 0.001;
+    var useBackdropFilter = blur > 0 && !transparentCards;
+    var surfaceAlpha = transparentCards
+      ? 0
+      : darkMode
+        ? Math.max(0.5, Math.min(0.94, opacity))
+        : Math.max(0.28, Math.min(0.98, opacity));
+    var surface1Alpha = transparentCards
+      ? 0
+      : darkMode
+        ? Math.min(0.98, surfaceAlpha + 0.08)
+        : Math.min(0.99, surfaceAlpha + 0.07);
+    var surface2Alpha = transparentCards
+      ? 0
+      : darkMode
+        ? Math.max(0.44, surfaceAlpha - 0.05)
+        : Math.max(0.44, surfaceAlpha - 0.08);
+    var surface3Alpha = transparentCards
+      ? 0
+      : darkMode
+        ? Math.max(0.36, surfaceAlpha - 0.1)
+        : Math.max(0.34, surfaceAlpha - 0.17);
     var inputBorder = darkMode
       ? "rgba(122, 140, 168, 0.5)"
       : "rgba(214, 220, 228, 0.9)";
@@ -796,32 +815,58 @@
       ? "rgba(19, 24, 33, " + surfaceAlpha.toFixed(2) + ")"
       : "rgba(255, 255, 255, " + surfaceAlpha.toFixed(2) + ")";
     var surface1 = darkMode
-      ? "rgba(24, 31, 42, " + Math.min(0.98, surfaceAlpha + 0.08).toFixed(2) + ")"
-      : "rgba(255, 255, 255, " + Math.min(0.99, surfaceAlpha + 0.07).toFixed(2) + ")";
+      ? "rgba(24, 31, 42, " + surface1Alpha.toFixed(2) + ")"
+      : "rgba(255, 255, 255, " + surface1Alpha.toFixed(2) + ")";
     var surface2 = darkMode
-      ? "rgba(24, 31, 42, " + Math.max(0.44, surfaceAlpha - 0.05).toFixed(2) + ")"
-      : "rgba(255, 255, 255, " + Math.max(0.44, surfaceAlpha - 0.08).toFixed(2) + ")";
+      ? "rgba(24, 31, 42, " + surface2Alpha.toFixed(2) + ")"
+      : "rgba(255, 255, 255, " + surface2Alpha.toFixed(2) + ")";
     var surface3 = darkMode
-      ? "rgba(30, 38, 51, " + Math.max(0.36, surfaceAlpha - 0.1).toFixed(2) + ")"
-      : "rgba(245, 246, 248, " + Math.max(0.34, surfaceAlpha - 0.17).toFixed(2) + ")";
-    var shadow = darkMode
-      ? "0 12px 32px rgba(0, 0, 0, 0.34)"
+      ? "rgba(30, 38, 51, " + surface3Alpha.toFixed(2) + ")"
+      : "rgba(245, 246, 248, " + surface3Alpha.toFixed(2) + ")";
+    var shadow = transparentCards
+      ? "none"
+      : darkMode
+        ? "0 12px 32px rgba(0, 0, 0, 0.34)"
+        : "0 10px 30px rgba(15, 23, 42, 0.09)";
+    var shadowHover = transparentCards
+      ? "none"
+      : darkMode
+        ? "0 18px 38px rgba(0, 0, 0, 0.42)"
+        : "0 16px 34px rgba(15, 23, 42, 0.14)";
+    var wfShadow = transparentCards
+      ? "none"
+      : darkMode
+        ? "0 14px 34px rgba(0, 0, 0, 0.38)"
+        : "0 10px 28px rgba(20, 32, 55, 0.12)";
+    var wfShadowSoft = transparentCards
+      ? "none"
+      : darkMode
+        ? "0 10px 24px rgba(0, 0, 0, 0.3)"
+        : "0 6px 18px rgba(20, 32, 55, 0.1)";
+    var uiShadowSoft = transparentCards
+      ? "none"
       : "0 10px 30px rgba(15, 23, 42, 0.09)";
-    var shadowHover = darkMode
-      ? "0 18px 38px rgba(0, 0, 0, 0.42)"
-      : "0 16px 34px rgba(15, 23, 42, 0.14)";
-    var wfShadow = darkMode
-      ? "0 14px 34px rgba(0, 0, 0, 0.38)"
-      : "0 10px 28px rgba(20, 32, 55, 0.12)";
-    var wfShadowSoft = darkMode
-      ? "0 10px 24px rgba(0, 0, 0, 0.3)"
-      : "0 6px 18px rgba(20, 32, 55, 0.1)";
+    var uiShadowSoftDark = transparentCards
+      ? "none"
+      : "0 14px 32px rgba(0, 0, 0, 0.34)";
+
+    if (transparentCards) {
+      root.setAttribute("data-ui-transparent-cards", "true");
+    } else {
+      root.removeAttribute("data-ui-transparent-cards");
+    }
 
     root.style.setProperty("--ui-page-bg", next.baseColor);
     root.style.setProperty("--ui-page-bg-dark", "#101318");
     root.style.setProperty("--ui-card-opacity", surfaceAlpha.toFixed(2));
     root.style.setProperty("--ui-card-blur", blur + "px");
+    root.style.setProperty(
+      "--ui-card-backdrop-filter",
+      useBackdropFilter ? "blur(" + blur + "px) saturate(115%)" : "none"
+    );
     root.style.setProperty("--ui-noise-opacity", "0");
+    root.style.setProperty("--ui-shadow-soft", uiShadowSoft);
+    root.style.setProperty("--ui-shadow-soft-dark", uiShadowSoftDark);
     root.style.setProperty("--bg-gradient", "none");
     root.style.setProperty("--bg", darkMode ? "var(--ui-page-bg-dark)" : "var(--ui-page-bg)");
     root.style.setProperty("--card-bg", cardBg);

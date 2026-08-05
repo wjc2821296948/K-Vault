@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -8,1071 +8,3112 @@
   <link rel="apple-touch-icon" href="/logo.png">
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="stylesheet" href="/theme.css">
-  <script src="/theme.js?v=20260305"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
-  <!-- PDF.js (仅用于 PDF 预览) -->
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <style>
     :root {
-      --primary-color: #8a4bff;
-      --primary-light: #b39ddb;
-      --primary-dark: #6c3ce0;
-      --accent-color: #ffd7e4;
-      --bg-gradient: linear-gradient(135deg, #ffd7e4 0%, #c8f1ff 100%);
-      --card-bg: rgba(255, 255, 255, 0.92);
-      --shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-      --shadow-hover: 0 8px 24px rgba(138, 75, 255, 0.12);
-      --transition: all 0.2s ease;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --text: #17212b;
+      --muted: #667085;
+      --line: #dde3ea;
+      --brand: #2563eb;
+      --brand-dark: #1d4ed8;
+      --danger: #b42318;
+      --code-bg: #101828;
+      --code-text: #e6edf3;
+      --shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
     }
 
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    }
+
+    html,
+    body {
+      min-height: 100%;
     }
 
     body {
-      background: var(--bg-gradient);
-      background-attachment: fixed;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .shell {
       min-height: 100vh;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      animation: fadeIn 0.5s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* 头部 */
-    .header {
       display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      padding: 18px 28px;
-      background: var(--card-bg);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-radius: 18px;
-      margin-bottom: 24px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      flex-wrap: wrap;
-      gap: 12px;
+      gap: 16px;
+      padding: 16px 24px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
     }
 
-    .header-title {
-      font-size: 1.35em;
+    .title-group {
+      min-width: 0;
+    }
+
+    .title-group h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.35;
       font-weight: 700;
-      color: #333;
+    }
+
+    .title-group p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .actions {
       display: flex;
       align-items: center;
-      gap: 12px;
-    }
-
-    .header-title i { 
-      color: var(--primary-color); 
-      font-size: 1.1em;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 12px;
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      min-height: 36px;
+      padding: 7px 12px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 0.9em;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: var(--transition);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary-color), #9b6dff);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(138, 75, 255, 0.3);
-    }
-
-    .btn-secondary {
-      background: white;
-      color: #555;
-      border: 1.5px solid #e0e0e0;
-    }
-
-    .btn-secondary:hover {
-      background: linear-gradient(135deg, rgba(255, 215, 228, 0.5), rgba(200, 241, 255, 0.5));
-      border-color: var(--primary-light);
-      color: var(--primary-color);
-      transform: translateY(-2px);
-    }
-
-    /* 预览容器 */
-    .preview-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 20px;
-      padding: 28px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-    }
-
-    .file-info {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #eee;
-      margin-bottom: 20px;
-    }
-
-    .file-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-      border-radius: 12px;
-      display: flex;
+      text-decoration: none;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-size: 1.5em;
+      gap: 6px;
+      white-space: nowrap;
     }
 
-    .file-details h2 {
-      font-size: 1.2em;
-      color: #333;
-      margin-bottom: 4px;
-      word-break: break-all;
+    .btn:hover {
+      border-color: #b8c2cc;
+      background: #f8fafc;
+    }
+
+    .btn.primary {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+
+    .btn.primary:hover {
+      background: var(--brand-dark);
+      border-color: var(--brand-dark);
+    }
+
+    .file-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      margin: 18px auto 0;
+      width: min(1180px, calc(100% - 32px));
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .file-name {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
     }
 
     .file-meta {
-      font-size: 0.85em;
-      color: #999;
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
     }
 
-    .file-meta span {
-      margin-right: 16px;
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 9px;
+      background: #f8fafc;
     }
 
-    /* 预览区域 */
-    .preview-area {
-      min-height: 400px;
+    .viewer-wrap {
+      flex: 1;
+      width: min(1180px, calc(100% - 32px));
+      margin: 14px auto 24px;
+      display: flex;
+      min-height: 0;
+    }
+
+    .viewer {
+      flex: 1;
+      min-height: calc(100vh - 210px);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f5f5f5;
-      border-radius: 12px;
-      overflow: hidden;
       position: relative;
     }
 
-    /* 图片预览 - 原生方式 */
-    .preview-image {
-      max-width: 100%;
-      max-height: 70vh;
-      object-fit: contain;
+    .viewer.media {
+      background: #070b12;
     }
 
-    /* 统一媒体预览 - iframe 容器 (85% 屏幕宽高) */
-    .iframe-preview-container {
-      width: 100%;
-      height: 70vh;
-      position: relative;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #000;
-    }
-
-    .iframe-preview-container iframe {
+    .preview-image,
+    .preview-video {
       width: 100%;
       height: 100%;
-      border: none;
+      max-height: calc(100vh - 230px);
+      object-fit: contain;
+      display: block;
+      background: #070b12;
     }
 
-    .preview-error {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 40px;
-      color: #f56c6c;
-      min-height: 200px;
+    .preview-video {
+      min-height: 360px;
     }
 
-    .preview-error i {
-      font-size: 3em;
-      margin-bottom: 16px;
+    .preview-audio {
+      width: min(720px, calc(100% - 40px));
     }
 
-    /* PDF 预览 */
     .preview-pdf {
       width: 100%;
-      height: 70vh;
-      border: none;
+      height: calc(100vh - 220px);
+      min-height: 520px;
+      border: 0;
+      background: #fff;
     }
 
-    /* Office 文档预览 */
-    .preview-office-container {
+    .doc-view,
+    .text-view {
       width: 100%;
-      padding: 10px;
-    }
-
-    .preview-office {
-      width: 100%;
-      height: 70vh;
-      border: none;
-      border-radius: 8px;
-    }
-
-    /* 文本预览 */
-    .preview-text {
-      width: 100%;
-      height: 60vh;
-      padding: 20px;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 14px;
-      line-height: 1.6;
+      height: calc(100vh - 220px);
+      min-height: 520px;
       overflow: auto;
+      align-self: stretch;
+    }
+
+    .text-view {
+      margin: 0;
+      padding: 20px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      font: 13px/1.6 Consolas, Monaco, "Courier New", monospace;
       white-space: pre-wrap;
-      word-break: break-all;
-      border-radius: 8px;
+      overflow-wrap: anywhere;
     }
 
-    /* 不支持预览 */
-    .preview-unsupported {
+    .doc-view {
+      padding: 32px;
+      background: #eef2f6;
+    }
+
+    .doc-page {
+      max-width: 860px;
+      min-height: 680px;
+      margin: 0 auto;
+      padding: 42px 52px;
+      background: #fff;
+      border: 1px solid #d7dde5;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+      color: #111827;
+    }
+
+    .doc-page h1,
+    .doc-page h2,
+    .doc-page h3 {
+      margin: 18px 0 10px;
+      line-height: 1.25;
+    }
+
+    .doc-page h1 {
+      font-size: 26px;
+    }
+
+    .doc-page h2 {
+      font-size: 21px;
+    }
+
+    .doc-page h3 {
+      font-size: 17px;
+    }
+
+    .doc-page p {
+      margin: 0 0 10px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .doc-page table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      table-layout: fixed;
+    }
+
+    .doc-page td,
+    .doc-page th {
+      border: 1px solid #cbd5e1;
+      padding: 8px;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .sheet-section,
+    .slide-section {
+      margin: 0 0 22px;
+    }
+
+    .sheet-section h2,
+    .slide-section h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .sheet-table {
+      font-size: 13px;
+    }
+
+    .status {
+      max-width: 540px;
+      padding: 32px;
       text-align: center;
-      padding: 60px 40px;
-      color: #666;
+      color: var(--muted);
     }
 
-    .preview-unsupported i {
-      font-size: 4em;
-      color: #ddd;
-      margin-bottom: 20px;
-    }
-
-    .preview-unsupported h3 {
+    .status strong {
+      display: block;
       margin-bottom: 8px;
-      color: #333;
+      color: var(--text);
+      font-size: 17px;
     }
 
-    /* 加载状态 */
-    .loading {
+    .status.error strong {
+      color: var(--danger);
+    }
+
+    .deferred-gate {
+      width: min(520px, calc(100% - 40px));
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 16px;
+      padding: 28px;
+      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.78), rgba(37, 99, 235, 0.42)),
+        radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.22), transparent 32%);
+      box-shadow: 0 18px 46px rgba(2, 8, 23, 0.32);
+      cursor: pointer;
+      text-align: center;
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+    }
+
+    .deferred-gate strong,
+    .deferred-gate span {
+      display: block;
+    }
+
+    .deferred-gate strong {
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .deferred-gate span {
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .deferred-gate .gate-icon {
+      width: 46px;
+      height: 46px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 16px;
-      color: #666;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.16);
+      font-size: 20px;
     }
 
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #eee;
-      border-top-color: var(--primary-color);
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border: 3px solid #d8dee7;
+      border-top-color: var(--brand);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
+      margin: 0 auto 14px;
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
-    /* NSFW 遮罩 */
-    .nsfw-mask {
+    body.embed {
+      background: #070b12;
+    }
+
+    body.embed .topbar,
+    body.embed .file-panel {
+      display: none;
+    }
+
+    body.embed .viewer-wrap {
+      width: 100%;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    body.embed .viewer {
+      border: 0;
+      border-radius: 0;
+      min-height: 100vh;
+      box-shadow: none;
+    }
+
+    body.embed .preview-image,
+    body.embed .preview-video {
+      max-height: 100vh;
+    }
+
+    body.embed .preview-pdf,
+    body.embed .doc-view,
+    body.embed .text-view {
+      height: 100vh;
+      min-height: 100vh;
+    }
+
+    :root {
+      --bg: #f5f7fb;
+      --panel: #fbfcff;
+      --text: #111827;
+      --muted: #667085;
+      --line: #d8e0ea;
+      --brand: #0f766e;
+      --brand-dark: #115e59;
+      --danger: #b42318;
+      --code-bg: #0c1220;
+      --code-text: #e7eef8;
+      --shadow: 0 20px 56px rgba(15, 23, 42, 0.12);
+      --accent: #f59e0b;
+    }
+
+    body {
+      background:
+        linear-gradient(180deg, #eef4f7 0%, #f7f8fb 48%, #eef2f7 100%);
+    }
+
+    .theme-floating-toggle,
+    .theme-auto-inline-toggle,
+    .theme-admin-toggle,
+    [data-theme-toggle] {
+      display: none !important;
+    }
+
+    .topbar {
+      min-height: 68px;
+      padding: 14px 24px;
+      background: rgba(251, 252, 255, 0.92);
+      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter: blur(18px);
+    }
+
+    .title-group h1 {
+      font-size: 17px;
+    }
+
+    .title-group p {
+      max-width: 62vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .btn {
+      border-radius: 7px;
+      font-weight: 650;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+    }
+
+    .file-panel {
+      border-radius: 8px;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.09);
+    }
+
+    .pill {
+      border-radius: 7px;
+      background: #f3f6fa;
+      font-weight: 650;
+    }
+
+    .viewer {
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 249, 252, 0.96)),
+        #fff;
+      box-shadow: 0 18px 52px rgba(15, 23, 42, 0.13);
+    }
+
+    .viewer.media {
+      background:
+        linear-gradient(180deg, rgba(8, 13, 22, 0.94), rgba(11, 18, 32, 0.98));
+    }
+
+    .viewer.media::before {
+      content: "";
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.9);
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: 0.42;
+    }
+
+    .preview-image {
+      position: relative;
+      z-index: 1;
+      padding: 18px;
+      background:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+        #070b12;
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px;
+    }
+
+    .media-frame,
+    .audio-console,
+    .summary-view,
+    .archive-view,
+    .font-view,
+    .data-view,
+    .markdown-view {
+      position: relative;
+      z-index: 1;
+    }
+
+    .media-frame {
+      width: 100%;
+      height: 100%;
+      min-height: calc(100vh - 230px);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: white;
-      z-index: 10;
+      padding: 18px;
     }
 
-    .nsfw-mask i {
-      font-size: 3em;
-      margin-bottom: 16px;
-      color: #f56c6c;
+    .media-frame .preview-video {
+      border-radius: 8px;
+      background: #030712;
+      box-shadow: 0 26px 80px rgba(0, 0, 0, 0.38);
     }
 
-    .nsfw-mask h3 {
-      margin-bottom: 8px;
+    .audio-console {
+      width: min(760px, calc(100% - 40px));
+      color: #fff;
+      padding: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(19, 78, 74, 0.72)),
+        #0b1220;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.36);
     }
 
-    .nsfw-mask p {
-      color: #aaa;
-      margin-bottom: 20px;
+    .audio-head {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 22px;
     }
 
-    .nsfw-mask .btn {
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.3);
+    .audio-mark {
+      width: 64px;
+      height: 64px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: #101828;
+      background: linear-gradient(135deg, #f8fafc, #99f6e4 70%, #fbbf24);
+      font-size: 27px;
+      font-weight: 800;
     }
 
-    .nsfw-mask .btn:hover {
-      background: rgba(255, 255, 255, 0.3);
+    .audio-title {
+      min-width: 0;
     }
 
-    /* 设置面板 */
-    .settings-panel {
-      margin-top: 20px;
+    .audio-title strong {
+      display: block;
+      overflow-wrap: anywhere;
+      font-size: 18px;
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+
+    .audio-title span,
+    .summary-meta,
+    .archive-meta {
+      color: rgba(255, 255, 255, 0.68);
+      font-size: 13px;
+    }
+
+    .audio-wave {
+      height: 82px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 8px 0 24px;
+      padding: 0 2px;
+      overflow: hidden;
+    }
+
+    .audio-wave span {
+      flex: 1;
+      min-width: 4px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #fbbf24, #2dd4bf 55%, #60a5fa);
+      opacity: 0.86;
+    }
+
+    .audio-wave span:nth-child(2n) { height: 42%; }
+    .audio-wave span:nth-child(3n) { height: 76%; }
+    .audio-wave span:nth-child(4n) { height: 55%; }
+    .audio-wave span:nth-child(5n) { height: 92%; }
+
+    .audio-console .preview-audio {
+      width: 100%;
+      display: block;
+      accent-color: var(--brand);
+    }
+
+    .doc-view,
+    .markdown-view,
+    .data-view,
+    .archive-view,
+    .font-view,
+    .summary-view {
+      width: 100%;
+      height: calc(100vh - 220px);
+      min-height: 520px;
+      overflow: auto;
+      align-self: stretch;
+      background: #eef2f6;
+      padding: 26px;
+    }
+
+    .markdown-page,
+    .data-page,
+    .archive-page,
+    .font-page,
+    .summary-page {
+      max-width: 980px;
+      min-height: 100%;
+      margin: 0 auto;
+      padding: 34px;
+      border: 1px solid #d7dde5;
+      border-radius: 8px;
+      background: #fff;
+      color: #111827;
+      box-shadow: 0 18px 48px rgba(15, 23, 42, 0.1);
+    }
+
+    .markdown-page h1,
+    .markdown-page h2,
+    .markdown-page h3 {
+      margin: 22px 0 12px;
+      line-height: 1.25;
+    }
+
+    .markdown-page h1:first-child,
+    .markdown-page h2:first-child,
+    .markdown-page h3:first-child {
+      margin-top: 0;
+    }
+
+    .markdown-page p,
+    .markdown-page li {
+      line-height: 1.78;
+    }
+
+    .markdown-page blockquote {
+      margin: 16px 0;
+      padding: 10px 14px;
+      border-left: 4px solid var(--brand);
+      background: #f4f8f8;
+      color: #344054;
+    }
+
+    .markdown-page code,
+    .markdown-page pre,
+    .inline-code {
+      font-family: Consolas, Monaco, "Courier New", monospace;
+    }
+
+    .markdown-page pre,
+    .data-code {
+      margin: 14px 0;
       padding: 16px;
-      background: rgba(255, 255, 255, 0.6);
-      border-radius: 12px;
+      border-radius: 8px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      overflow: auto;
+      line-height: 1.6;
+      white-space: pre;
     }
 
-    .settings-title {
-      font-size: 0.9em;
-      color: #666;
-      margin-bottom: 12px;
+    .data-summary,
+    .summary-stack {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 18px;
     }
 
-    .setting-item {
+    .data-summary {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .data-chip,
+    .summary-chip {
+      border: 1px solid #d8e0ea;
+      border-radius: 8px;
+      padding: 11px 12px;
+      background: #f8fafc;
+    }
+
+    .data-chip strong,
+    .summary-chip strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 12px;
+      color: #667085;
+    }
+
+    .table-scroll,
+    .archive-list {
+      overflow: auto;
+      border: 1px solid #d8e0ea;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .table-preview {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .table-preview th,
+    .table-preview td {
+      border-bottom: 1px solid #e5ebf2;
+      border-right: 1px solid #eef2f6;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+    }
+
+    .table-preview th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      color: #475467;
+      z-index: 1;
+    }
+
+    .archive-row {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 44px;
+      padding: 8px 12px;
+      border-bottom: 1px solid #edf1f5;
+    }
+
+    .archive-row:last-child {
+      border-bottom: 0;
+    }
+
+    .archive-name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .archive-entry-preview {
+      margin-top: 16px;
+      border: 1px solid #d8e0ea;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #0c1220;
+    }
+
+    .archive-entry-preview header {
+      padding: 10px 12px;
+      background: #f8fafc;
+      color: #344054;
+      font-weight: 700;
+    }
+
+    .archive-entry-preview pre {
+      margin: 0;
+      max-height: 360px;
+      overflow: auto;
+      padding: 14px;
+      color: var(--code-text);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .font-sample {
+      margin-top: 20px;
+      padding: 22px;
+      border-radius: 8px;
+      border: 1px dashed #b7c4d2;
+      background: #f8fafc;
+    }
+
+    .font-sample .font-large {
+      margin: 0 0 12px;
+      font-size: 42px;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    .font-sample .font-body {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.75;
+    }
+
+    .summary-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 14px;
+      color: #101828;
+      background: linear-gradient(135deg, #ccfbf1, #fef3c7);
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .summary-page h2,
+    .archive-page h2,
+    .font-page h2,
+    .data-page h2 {
+      margin: 0 0 8px;
+      line-height: 1.25;
+    }
+
+    .summary-page p,
+    .archive-page p,
+    .font-page p,
+    .data-page p {
+      color: #475467;
+      line-height: 1.7;
+    }
+
+    .deferred-gate {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(8, 13, 22, 0.92), rgba(19, 78, 74, 0.76)),
+        #0b1220;
+    }
+
+    .deferred-gate::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+      background-size: 18px 18px;
+      filter: blur(1px);
+      opacity: 0.44;
+    }
+
+    .deferred-gate > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    body.embed {
+      background: #070b12;
+    }
+
+    body.embed .viewer {
+      background:
+        linear-gradient(180deg, rgba(8, 13, 22, 0.94), rgba(11, 18, 32, 0.98));
+    }
+
+    body.embed .media-frame {
+      min-height: 100vh;
+    }
+
+    body.embed .doc-view,
+    body.embed .markdown-view,
+    body.embed .data-view,
+    body.embed .archive-view,
+    body.embed .font-view,
+    body.embed .summary-view {
+      height: 100vh;
+      min-height: 100vh;
+    }
+
+    /* 清爽版预览工作台：少装饰、浅色底、低饱和青绿强调。 */
+    :root {
+      --bg: #f3faf9;
+      --panel: #ffffff;
+      --text: #102027;
+      --muted: #65777d;
+      --line: #d8e8e6;
+      --brand: #0f8f8a;
+      --brand-dark: #0a6f6b;
+      --danger: #b42318;
+      --code-bg: #102027;
+      --code-text: #e6f4f1;
+      --shadow: 0 18px 42px rgba(15, 74, 78, 0.1);
+      --accent: #7bb8ad;
+    }
+
+    body,
+    body.embed {
+      background:
+        linear-gradient(180deg, #f4fbfa 0%, #edf7f5 100%);
+    }
+
+    .topbar {
+      min-height: 64px;
+      border-bottom-color: rgba(15, 143, 138, 0.16);
+      background: rgba(255, 255, 255, 0.88);
+    }
+
+    .btn {
+      border-radius: 8px;
+      box-shadow: none;
+    }
+
+    .btn.primary {
+      background: var(--brand);
+      border-color: var(--brand);
+    }
+
+    .btn.primary:hover {
+      background: var(--brand-dark);
+      border-color: var(--brand-dark);
+    }
+
+    .file-panel,
+    .viewer,
+    .markdown-page,
+    .data-page,
+    .archive-page,
+    .email-page,
+    .font-page,
+    .summary-page {
+      border-color: rgba(15, 143, 138, 0.16);
+      box-shadow: var(--shadow);
+    }
+
+    .viewer,
+    body.embed .viewer,
+    .viewer.media {
+      background: #fbfffe;
+    }
+
+    .viewer.media::before {
+      background-image:
+        linear-gradient(rgba(15, 143, 138, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 143, 138, 0.045) 1px, transparent 1px);
+      opacity: 0.42;
+    }
+
+    .preview-image {
+      background:
+        linear-gradient(45deg, rgba(15, 143, 138, 0.04) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(15, 143, 138, 0.04) 25%, transparent 25%),
+        #f7fbfa;
+      background-size: 22px 22px;
+      background-position: 0 0, 0 11px;
+    }
+
+    .media-frame .preview-video {
+      background: #071111;
+      box-shadow: 0 18px 46px rgba(15, 74, 78, 0.16);
+    }
+
+    .audio-console {
+      color: var(--text);
+      border: 1px solid rgba(15, 143, 138, 0.18);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(234, 248, 245, 0.94)),
+        #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .audio-title span,
+    .summary-meta,
+    .archive-meta {
+      color: var(--muted);
+    }
+
+    .audio-mark,
+    .summary-icon {
+      background: linear-gradient(135deg, #e7fbf7, #c8f0e8);
+      color: var(--brand-dark);
+    }
+
+    .audio-wave span {
+      background: linear-gradient(180deg, #7bb8ad, #1aa59f 60%, #7ed7cc);
+    }
+
+    .doc-view,
+    .markdown-view,
+    .data-view,
+    .archive-view,
+    .email-view,
+    .font-view,
+    .summary-view {
+      background: #edf7f5;
+    }
+
+    .email-view,
+    .enhanced-view {
+      width: 100%;
+      height: calc(100vh - 220px);
+      min-height: 520px;
+      overflow: auto;
+      align-self: stretch;
+      background: #edf7f5;
+      padding: 26px;
+    }
+
+    .email-page {
+      max-width: 980px;
+      min-height: 100%;
+      margin: 0 auto;
+      padding: 34px;
+      border: 1px solid rgba(15, 143, 138, 0.16);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .email-header {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 10px 14px;
+      margin: 18px 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fdfc;
+    }
+
+    .email-header strong {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .email-body {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      line-height: 1.72;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .email-attachments {
+      display: grid;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .email-attachment {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 0;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fdfc;
     }
 
-    .setting-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #333;
+    .enhanced-view {
+      padding: 0;
+      background: #fbfffe;
     }
 
-    .toggle-switch {
-      position: relative;
-      width: 44px;
-      height: 24px;
+    .enhanced-shell {
+      width: 100%;
+      height: 100%;
+      min-height: inherit;
+      background: #fbfffe;
     }
 
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
+    .enhanced-shell flyfish-file-viewer {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: inherit;
     }
 
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.3s;
-      border-radius: 24px;
+    .deferred-gate {
+      border: 1px solid rgba(15, 143, 138, 0.2);
+      color: var(--text);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(229, 247, 244, 0.88));
+      box-shadow: var(--shadow);
     }
 
-    .toggle-slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: 0.3s;
-      border-radius: 50%;
+    .deferred-gate::before {
+      background-image:
+        linear-gradient(rgba(15, 143, 138, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 143, 138, 0.05) 1px, transparent 1px);
     }
 
-    input:checked + .toggle-slider {
-      background-color: var(--primary-color);
+    .deferred-gate span {
+      color: var(--muted);
     }
 
-    input:checked + .toggle-slider:before {
-      transform: translateX(20px);
+    .deferred-gate .gate-icon {
+      background: #e5f7f4;
+      color: var(--brand-dark);
     }
 
-    /* 响应式设计 */
-    @media (max-width: 768px) {
-      .container {
-        padding: 16px;
-      }
+    body.embed .enhanced-view,
+    body.embed .email-view {
+      height: 100vh;
+      min-height: 100vh;
+    }
 
-      .header {
-        flex-direction: column;
+    @media (max-width: 720px) {
+      .topbar {
         align-items: stretch;
-        gap: 12px;
-        padding: 16px 20px;
-        border-radius: 14px;
-      }
-
-      .header-title {
-        font-size: 1.15em;
-        justify-content: center;
-      }
-
-      .header-actions {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
-      }
-
-      .btn {
-        padding: 10px 18px;
-        font-size: 0.85em;
-      }
-
-      .preview-card {
-        padding: 20px;
-        border-radius: 16px;
-      }
-
-      .file-info {
         flex-direction: column;
-        text-align: center;
-        gap: 12px;
-      }
-
-      .file-icon {
-        width: 56px;
-        height: 56px;
-        font-size: 1.8em;
-      }
-
-      .file-details h2 {
-        font-size: 1.1em;
-      }
-
-      .file-meta {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
-      }
-
-      .file-meta span {
-        margin-right: 0;
-      }
-
-      .preview-area {
-        min-height: 300px;
-        border-radius: 10px;
-      }
-
-      .preview-image {
-        max-height: 50vh;
-      }
-
-      .iframe-preview-container.video {
-        max-height: 50vh;
-      }
-
-      .iframe-preview-container.audio {
-        height: 180px;
-      }
-
-      .preview-pdf,
-      .preview-office {
-        height: 50vh;
-      }
-
-      .preview-text {
-        height: 45vh;
-        font-size: 13px;
-        padding: 16px;
-      }
-
-      .settings-panel {
         padding: 14px;
       }
 
-      .setting-item {
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .container {
-        padding: 10px;
-      }
-
-      .header {
-        padding: 12px 14px;
-        gap: 10px;
-        border-radius: 12px;
-        margin-bottom: 16px;
-      }
-
-      .header-title {
-        font-size: 1em;
-        gap: 8px;
-      }
-
-      .header-actions {
-        gap: 6px;
+      .actions {
+        justify-content: stretch;
       }
 
       .btn {
-        padding: 8px 12px;
-        font-size: 0.78em;
-        border-radius: 10px;
-        gap: 6px;
         flex: 1;
-        justify-content: center;
         min-width: 0;
       }
 
-      .btn i {
-        font-size: 0.9em;
+      .file-panel {
+        grid-template-columns: 1fr;
+        width: calc(100% - 20px);
+        margin-top: 10px;
       }
 
-      .preview-card {
-        padding: 14px;
-        border-radius: 12px;
+      .viewer-wrap {
+        width: calc(100% - 20px);
+        margin: 10px auto;
       }
 
-      .file-info {
-        padding-bottom: 12px;
-        margin-bottom: 14px;
-      }
-
-      .file-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 1.4em;
-        border-radius: 10px;
-      }
-
-      .file-details h2 {
-        font-size: 0.95em;
-        line-height: 1.3;
-      }
-
-      .file-meta {
-        font-size: 0.78em;
-        gap: 6px;
-      }
-
-      .preview-area {
-        min-height: 250px;
-        border-radius: 8px;
-      }
-
-      .preview-image {
-        max-height: 40vh;
-      }
-
-      .iframe-preview-container.video {
-        max-height: 45vh;
-      }
-
-      .iframe-preview-container.audio {
-        height: 160px;
-      }
-
+      .viewer,
       .preview-pdf,
-      .preview-office {
-        height: 45vh;
+      .doc-view,
+      .text-view {
+        min-height: calc(100vh - 230px);
+        height: calc(100vh - 230px);
       }
 
-      .preview-text {
-        height: 40vh;
-        font-size: 12px;
+      .preview-video {
+        min-height: 240px;
+      }
+
+      .doc-view {
         padding: 12px;
-        line-height: 1.5;
       }
 
-      .preview-unsupported {
-        padding: 40px 20px;
+      .doc-page {
+        min-height: 100%;
+        padding: 22px 18px;
       }
 
-      .preview-unsupported i {
-        font-size: 3em;
+      .title-group p {
+        max-width: none;
+        white-space: normal;
       }
 
-      .preview-unsupported h3 {
-        font-size: 1em;
+      .doc-view,
+      .markdown-view,
+      .data-view,
+      .archive-view,
+      .email-view,
+      .font-view,
+      .summary-view {
+        padding: 10px;
       }
 
-      .preview-unsupported p {
-        font-size: 0.85em;
+      .markdown-page,
+      .data-page,
+      .archive-page,
+      .email-page,
+      .font-page,
+      .summary-page {
+        padding: 18px;
       }
 
-      .nsfw-mask i {
-        font-size: 2.5em;
+      .audio-console {
+        width: calc(100% - 24px);
+        padding: 18px;
       }
 
-      .nsfw-mask h3 {
-        font-size: 1em;
+      .audio-head {
+        grid-template-columns: 48px minmax(0, 1fr);
       }
 
-      .nsfw-mask p {
-        font-size: 0.85em;
+      .audio-mark {
+        width: 48px;
+        height: 48px;
+        font-size: 22px;
       }
 
-      .loading {
-        gap: 12px;
+      .audio-wave {
+        height: 58px;
       }
 
-      .loading-spinner {
-        width: 32px;
-        height: 32px;
+      .archive-row {
+        grid-template-columns: 28px minmax(0, 1fr);
       }
 
-      .settings-panel {
-        padding: 12px;
-        border-radius: 10px;
-        margin-top: 16px;
-      }
-
-      .settings-title {
-        font-size: 0.82em;
-        margin-bottom: 10px;
-      }
-
-      .setting-label {
-        font-size: 0.88em;
-      }
-
-      .toggle-switch {
-        width: 40px;
-        height: 22px;
-      }
-
-      .toggle-slider:before {
-        height: 16px;
-        width: 16px;
-      }
-
-      input:checked + .toggle-slider:before {
-        transform: translateX(18px);
+      .archive-row .btn {
+        grid-column: 2;
+        justify-self: start;
       }
     }
   </style>
   <link rel="stylesheet" href="/mobile-refactor.css">
 </head>
 <body>
-  <div class="container" id="app" v-cloak>
-    <!-- 头部 -->
-    <div class="header">
-      <div class="header-title">
-        <i class="fas fa-eye"></i>
-        <span>文件预览</span>
+  <div class="shell">
+    <header class="topbar">
+      <div class="title-group">
+        <h1>文件预览</h1>
+        <p id="subtitle">K-Vault 本地预览器</p>
       </div>
-      <div class="header-actions">
-        <button class="btn btn-secondary" @click="copyLink">
-          <i class="fas fa-copy"></i> 复制链接
-        </button>
-        <button class="btn btn-primary" @click="downloadFile">
-          <i class="fas fa-download"></i> 下载文件
-        </button>
-        <a href="./" class="btn btn-secondary">
-          <i class="fas fa-home"></i> 返回首页
-        </a>
+      <div class="actions">
+        <button class="btn" type="button" id="copyBtn">复制直链</button>
+        <button class="btn" type="button" id="openBtn">新标签打开</button>
+        <button class="btn primary" type="button" id="downloadBtn">下载文件</button>
       </div>
-    </div>
+    </header>
 
-    <!-- 预览卡片 -->
-    <div class="preview-card">
-      <!-- 文件信息 -->
-      <div class="file-info">
-        <div class="file-icon">
-          <i :class="fileIcon"></i>
-        </div>
-        <div class="file-details">
-          <h2>{{ fileName }}</h2>
-          <div class="file-meta">
-            <span><i class="fas fa-file"></i> {{ fileType }}</span>
-            <span v-if="fileSize"><i class="fas fa-hdd"></i> {{ formatSize(fileSize) }}</span>
-          </div>
+    <section class="file-panel">
+      <div>
+        <h2 class="file-name" id="fileName">-</h2>
+        <div class="file-meta">
+          <span class="pill" id="fileType">未知类型</span>
+          <span class="pill" id="fileSize" hidden></span>
+          <span class="pill" id="storageHint">本地预览</span>
         </div>
       </div>
+    </section>
 
-      <!-- 预览区域 -->
-      <div class="preview-area">
-        <!-- 加载中 -->
-        <div class="loading" v-if="loading">
-          <div class="loading-spinner"></div>
-          <span>加载中...</span>
-        </div>
-
-        <!-- NSFW 遮罩 -->
-        <div class="nsfw-mask" v-if="isNsfw && !showNsfw && !loading">
-          <i class="fas fa-exclamation-triangle"></i>
-          <h3>敏感内容警告</h3>
-          <p>此内容可能包含成人或敏感内容</p>
-          <button class="btn" @click="showNsfw = true">
-            <i class="fas fa-eye"></i> 仍然查看
-          </button>
-        </div>
-
-        <!-- 图片预览 - 保持原生方式 -->
-        <img v-if="previewType === 'image' && !loading" 
-             :src="fileUrl" 
-             class="preview-image"
-             @load="onImageLoad"
-             @error="onLoadError">
-
-        <!-- 视频/音频/文档预览 - 使用统一媒体预览服务 iframe -->
-        <div v-else-if="(previewType === 'video' || previewType === 'audio') && !loading" 
-             class="iframe-preview-container">
-          <iframe 
-            ref="mediaIframe"
-            :src="iframePreviewUrl"
-            allow="autoplay; fullscreen; encrypted-media"
-            allowfullscreen>
-          </iframe>
-        </div>
-
-        <!-- PDF 预览 - 使用统一媒体预览服务 -->
-        <div v-else-if="previewType === 'pdf' && !loading" class="iframe-preview-container">
-          <iframe 
-            ref="mediaIframe"
-            :src="iframePreviewUrl"
-            allow="autoplay; fullscreen; encrypted-media"
-            allowfullscreen>
-          </iframe>
-        </div>
-
-        <!-- Office 文档预览 - 使用统一媒体预览服务 -->
-        <div v-else-if="previewType === 'office' && !loading" class="iframe-preview-container">
-          <iframe 
-            ref="mediaIframe"
-            :src="iframePreviewUrl"
-            allow="autoplay; fullscreen; encrypted-media"
-            allowfullscreen>
-          </iframe>
-        </div>
-
-        <!-- 文本预览 -->
-        <pre v-else-if="previewType === 'text' && !loading" class="preview-text">{{ textContent }}</pre>
-
-        <!-- 不支持预览 -->
-        <div v-else-if="previewType === 'unsupported' && !loading" class="preview-unsupported">
-          <i :class="fileIcon"></i>
-          <h3>此文件类型暂不支持在线预览</h3>
-          <p>您可以下载后使用本地软件打开</p>
-          <button class="btn btn-primary" @click="downloadFile" style="margin-top: 16px;">
-            <i class="fas fa-download"></i> 下载文件
-          </button>
+    <main class="viewer-wrap">
+      <div class="viewer" id="viewer">
+        <div class="status">
+          <div class="spinner"></div>
+          <strong>正在加载预览</strong>
+          <span>请稍候</span>
         </div>
       </div>
-
-      <!-- 设置面板 -->
-      <div class="settings-panel">
-        <div class="settings-title">预览设置</div>
-        <div class="setting-item">
-          <label class="setting-label">
-            <i class="fas fa-shield-alt"></i>
-            <span>安全模式（自动检测敏感内容）</span>
-          </label>
-          <label class="toggle-switch">
-            <input type="checkbox" v-model="safeMode" @change="saveSafeMode">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <div class="setting-item">
-          <label class="setting-label">
-            <i class="fas fa-bolt"></i>
-            <span>省流模式（不加载 >5MB 图片）</span>
-          </label>
-          <label class="toggle-switch">
-            <input type="checkbox" v-model="dataSaverMode" @change="saveDataSaverMode">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
+    </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
-  <!-- NSFW.js for client-side detection -->
-  <script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
   <script>
-    // 统一媒体预览服务基础 URL
-    const PREVIEW_SERVICE_BASE = 'https://www.katelya.eu.org';
+    (() => {
+      "use strict";
 
-    new Vue({
-      el: '#app',
-      data: {
-        fileUrl: '',
-        fileName: '',
-        fileType: '',
-        fileSize: 0,
-        previewType: 'unsupported',
-        loading: true,
-        textContent: '',
-        isNsfw: false,
-        showNsfw: false,
-        safeMode: true,
-        dataSaverMode: false,
-        nsfwModel: null
-      },
-      computed: {
-        fileIcon() {
-          const iconMap = {
-            'image': 'fas fa-image',
-            'video': 'fas fa-video',
-            'audio': 'fas fa-music',
-            'pdf': 'fas fa-file-pdf',
-            'office': 'fas fa-file-word',
-            'text': 'fas fa-file-alt',
-            'unsupported': 'fas fa-file'
-          };
-          return iconMap[this.previewType] || 'fas fa-file';
-        },
-        // 获取文件完整 URL
-        fullFileUrl() {
-          const fileUrlPath = this.fileUrl.startsWith('/') ? this.fileUrl : `/file/${this.fileUrl}`;
-          return window.location.origin + fileUrlPath;
-        },
-        // 统一媒体预览 URL - 简化版，Blog 会自动识别文件类型
-        iframePreviewUrl() {
-          const params = new URLSearchParams({
-            url: this.fullFileUrl,
-            title: this.fileName,
-            autoplay: '1'
-          });
-          return `${PREVIEW_SERVICE_BASE}/preview?${params.toString()}`;
-        },
-        officeViewerUrl() {
-          // 使用 Microsoft Office Online Viewer
-          // URL 必须经过正确编码
-          return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(this.fullFileUrl)}`;
+      const IMAGE_EXTS = new Set(["jpg", "jpeg", "jfif", "pjpeg", "pjp", "png", "apng", "gif", "webp", "bmp", "tif", "tiff", "svg", "ico", "avif", "heic", "heif", "jxl"]);
+      const VIDEO_EXTS = new Set(["mp4", "webm", "ogg", "ogv", "mov", "m4v", "m3u8", "avi", "mkv", "wmv", "flv", "3gp", "ts", "mts", "m2ts"]);
+      const AUDIO_EXTS = new Set(["mp3", "mpeg", "wav", "ogg", "oga", "flac", "aac", "m4a", "opus", "weba", "midi", "mid", "wma", "ape", "aif", "aiff"]);
+      const MARKDOWN_EXTS = new Set(["md", "markdown", "mdown"]);
+      const JSON_EXTS = new Set(["json", "jsonc", "json5", "ipynb"]);
+      const TABLE_EXTS = new Set(["csv", "tsv"]);
+      const ARCHIVE_EXTS = new Set(["zip", "zipx", "jar", "war", "ear", "apk", "cbz", "cbr", "rar", "7z", "tar", "tgz", "gz", "gzip", "bz2", "bzip2", "tbz", "tbz2", "xz", "txz", "lzma", "zst", "tzst", "cab", "ar", "cpio", "iso", "xar", "lha", "lzh"]);
+      const LOCAL_ARCHIVE_EXTS = new Set(["zip", "jar", "tar", "tgz", "gz", "gzip"]);
+      const FONT_EXTS = new Set(["ttf", "otf", "woff", "woff2"]);
+      const EMAIL_EXTS = new Set(["eml", "msg", "mbox"]);
+      const DRAWING_EXTS = new Set(["drawio", "dio", "excalidraw", "mermaid", "mmd", "plantuml", "puml"]);
+      const GEO_EXTS = new Set(["geojson", "kml", "gpx", "shp"]);
+      const MODEL_EXTS = new Set(["glb", "gltf", "obj", "stl", "ply", "fbx", "dae", "3ds", "3mf", "amf", "usd", "usda", "usdc", "usdz", "kmz", "pcd", "wrl", "vrml", "xyz", "vtk", "vtp", "step", "stp", "iges", "igs", "ifc", "3dm"]);
+      const CAD_EXTS = new Set(["dwg", "dxf", "dwf", "dwfx", "xps"]);
+      const EBOOK_EXTS = new Set(["epub", "umd"]);
+      const MINDMAP_EXTS = new Set(["xmind"]);
+      const TYPESET_EXTS = new Set(["ofd", "typ", "typst"]);
+      const EDA_EXTS = new Set(["olb", "dra", "gds", "oas", "oasis"]);
+      const DATA_ASSET_EXTS = new Set(["psd", "ai", "eps", "sqlite", "sqlite3", "db", "parquet", "avro", "wasm", "webarchive"]);
+      const SUMMARY_EXTS = new Set([
+        ...DATA_ASSET_EXTS, ...CAD_EXTS, ...TYPESET_EXTS, ...MINDMAP_EXTS, ...DRAWING_EXTS,
+        ...EBOOK_EXTS, ...GEO_EXTS, ...MODEL_EXTS, ...EDA_EXTS
+      ]);
+      const TEXT_EXTS = new Set([
+        "txt", "xml", "html", "htm", "css", "js", "mjs", "ts", "tsx", "jsx", "vue",
+        "py", "java", "c", "cpp", "h", "hpp", "go", "rs", "sh", "bat", "ps1", "sql",
+        "yaml", "yml", "toml", "ini", "conf", "cfg", "log", "patch", "diff", "bundle", "bdl",
+        "proto", "hcl", "tex", "gv", "graphql", "http", "rb", "swift", "kt", "kts", "php", "cs",
+        "cjs", "bash", "cc"
+      ]);
+      const OFFICE_KIND_BY_EXT = {
+        docx: "docx", docm: "docx", dotx: "docx", dotm: "docx",
+        xlsx: "xlsx", xlsm: "xlsx", xltx: "xlsx", xltm: "xlsx",
+        pptx: "pptx", pptm: "pptx", ppsx: "pptx", ppsm: "pptx", potx: "pptx", potm: "pptx"
+      };
+      const OFFICE_COMPAT_EXTS = new Set(["doc", "dot", "rtf", "odt", "xls", "xlsb", "xlt", "xltm", "ods", "fods", "numbers", "ppt", "odp"]);
+      const OPEN_XML_EXTS = new Set(Object.keys(OFFICE_KIND_BY_EXT));
+      const ENHANCED_VIEWER_EXTS = new Set([
+        ...OPEN_XML_EXTS, ...OFFICE_COMPAT_EXTS, "pdf", ...TYPESET_EXTS, ...ARCHIVE_EXTS, ...EMAIL_EXTS,
+        ...CAD_EXTS, ...MODEL_EXTS, ...GEO_EXTS, ...MINDMAP_EXTS, ...DRAWING_EXTS, ...EBOOK_EXTS,
+        ...DATA_ASSET_EXTS, ...EDA_EXTS, "m3u8", "midi", "mid", "heic", "heif", "jxl"
+      ]);
+      const FILE_VIEWER_CDN = "https://cdn.jsdelivr.net/npm/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js";
+      let enhancedViewerPromise = null;
+
+      const params = new URLSearchParams(window.location.search);
+      const state = {
+        fileUrl: "",
+        fileName: "",
+        fileSize: Number(params.get("size") || 0),
+        contentType: "",
+        kind: "unsupported",
+        extension: "",
+        autoplay: params.get("autoplay") === "1" || params.get("autoplay") === "true",
+        defer: params.get("defer") === "1" || params.get("defer") === "true"
+      };
+
+      const els = {
+        viewer: document.getElementById("viewer"),
+        fileName: document.getElementById("fileName"),
+        fileType: document.getElementById("fileType"),
+        fileSize: document.getElementById("fileSize"),
+        storageHint: document.getElementById("storageHint"),
+        subtitle: document.getElementById("subtitle"),
+        copyBtn: document.getElementById("copyBtn"),
+        openBtn: document.getElementById("openBtn"),
+        downloadBtn: document.getElementById("downloadBtn")
+      };
+
+      if (params.get("embed") === "1" || params.get("embed") === "true") {
+        document.body.classList.add("embed");
+      }
+
+      els.copyBtn.addEventListener("click", copyDirectLink);
+      els.openBtn.addEventListener("click", () => {
+        if (state.fileUrl) window.open(state.fileUrl, "_blank", "noopener,noreferrer");
+      });
+      els.downloadBtn.addEventListener("click", downloadFile);
+
+      init();
+
+      async function init() {
+        try {
+          state.fileUrl = resolveRequestedUrl();
+          if (!state.fileUrl) {
+            showStatus("缺少预览参数", "请提供 file、f 或 url 参数。", "error");
+            return;
+          }
+
+          await hydrateFileInfo();
+          state.extension = getExtension(state.fileName) || getExtension(urlPathName(state.fileUrl));
+          state.kind = getPreviewKind(state.extension, state.contentType);
+          updateHeader();
+          if (state.defer) {
+            renderDeferredGate();
+            return;
+          }
+          await renderPreview();
+        } catch (error) {
+          console.error("Preview failed:", error);
+          showStatus("预览加载失败", error.message || "文件无法预览。", "error");
         }
-      },
-      methods: {
-        formatSize(bytes) {
-          if (!bytes) return '';
-          const units = ['B', 'KB', 'MB', 'GB'];
-          let i = 0;
-          while (bytes >= 1024 && i < units.length - 1) {
-            bytes /= 1024;
-            i++;
-          }
-          return bytes.toFixed(i > 0 ? 2 : 0) + ' ' + units[i];
-        },
+      }
 
-        getPreviewType(ext) {
-          const types = {
-            image: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'ico'],
-            video: ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'],
-            audio: ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'opus'],
-            pdf: ['pdf'],
-            office: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
-            text: ['txt', 'md', 'json', 'xml', 'html', 'css', 'js', 'ts', 'py', 'java', 'c', 'cpp', 'h', 'sh', 'sql', 'yaml', 'yml', 'log', 'csv', 'ini', 'conf', 'cfg']
-          };
-          
-          for (const [type, exts] of Object.entries(types)) {
-            if (exts.includes(ext)) return type;
-          }
-          return 'unsupported';
-        },
+      function resolveRequestedUrl() {
+        const directUrl = params.get("url") || params.get("src");
+        if (directUrl) return toAbsoluteUrl(directUrl);
 
-        async init() {
-          // 获取 URL 参数
-          const params = new URLSearchParams(window.location.search);
-          const file = params.get('file') || params.get('f');
-          
-          // 临时文件标识符（用于 API 查询）
-          let fileIdWithExt = '';
-          
-          if (!file) {
-            // 尝试从路径获取
-            const path = window.location.pathname;
-            if (path.startsWith('/file/')) {
-              this.fileUrl = path;
-              fileIdWithExt = path.split('/').pop(); // 如: BQACAg...docx
-            } else {
-              this.loading = false;
-              this.previewType = 'unsupported';
+        const file = params.get("file") || params.get("f") || params.get("id");
+        if (!file) return "";
+        if (/^https?:\/\//i.test(file) || file.startsWith("/")) return toAbsoluteUrl(file);
+        return toAbsoluteUrl(`/file/${encodeURIComponent(file)}`);
+      }
+
+      function toAbsoluteUrl(value) {
+        try {
+          return new URL(value, window.location.origin).href;
+        } catch {
+          return "";
+        }
+      }
+
+      async function hydrateFileInfo() {
+        const hintedTitle = params.get("title") || params.get("name");
+        const fileId = getLocalFileId(state.fileUrl);
+        let metadata = null;
+
+        if (fileId) {
+          metadata = await fetchFileInfo(fileId);
+        }
+
+        state.fileName = hintedTitle
+          || metadata?.fileName
+          || metadata?.originalName
+          || fileNameFromUrl(state.fileUrl)
+          || fileId
+          || "download";
+
+        const hintedSize = Number(params.get("size") || 0);
+        state.fileSize = Number(metadata?.fileSize || hintedSize || state.fileSize || 0);
+
+        try {
+          const response = await fetch(state.fileUrl, {
+            method: "HEAD",
+            credentials: "include"
+          });
+          if (response.ok || response.status === 206) {
+            state.contentType = response.headers.get("Content-Type") || "";
+            const contentLength = Number(response.headers.get("Content-Length") || 0);
+            if (!state.fileSize && Number.isFinite(contentLength)) state.fileSize = contentLength;
+
+            if (!hintedTitle && !metadata?.fileName) {
+              const headerName = parseContentDisposition(response.headers.get("Content-Disposition") || "");
+              if (headerName) state.fileName = headerName;
+            }
+          }
+        } catch (error) {
+          console.warn("HEAD request skipped:", error);
+        }
+      }
+
+      async function fetchFileInfo(fileId) {
+        try {
+          const response = await fetch(`/api/file-info/${encodeURIComponent(fileId)}`, {
+            credentials: "include"
+          });
+          if (!response.ok) return null;
+          return await response.json();
+        } catch (error) {
+          console.warn("File info request skipped:", error);
+          return null;
+        }
+      }
+
+      function getLocalFileId(fileUrl) {
+        try {
+          const url = new URL(fileUrl);
+          if (url.origin !== window.location.origin) return "";
+          if (!url.pathname.startsWith("/file/")) return "";
+          return decodeURIComponent(url.pathname.slice("/file/".length));
+        } catch {
+          return "";
+        }
+      }
+
+      function fileNameFromUrl(fileUrl) {
+        try {
+          const url = new URL(fileUrl, window.location.origin);
+          const last = decodeURIComponent(url.pathname.split("/").filter(Boolean).pop() || "");
+          return last || "";
+        } catch {
+          return "";
+        }
+      }
+
+      function urlPathName(fileUrl) {
+        try {
+          return new URL(fileUrl, window.location.origin).pathname;
+        } catch {
+          return fileUrl;
+        }
+      }
+
+      function parseContentDisposition(value) {
+        const encoded = value.match(/filename\*=UTF-8''([^;]+)/i);
+        if (encoded) {
+          try {
+            return decodeURIComponent(encoded[1].trim().replace(/^"|"$/g, ""));
+          } catch {
+            return "";
+          }
+        }
+
+        const plain = value.match(/filename="?([^";]+)"?/i);
+        if (!plain) return "";
+        try {
+          return decodeURIComponent(plain[1]);
+        } catch {
+          return plain[1];
+        }
+      }
+
+      function getExtension(name) {
+        const clean = String(name || "").split(/[?#]/)[0];
+        const last = clean.split("/").pop() || "";
+        const index = last.lastIndexOf(".");
+        return index >= 0 ? last.slice(index + 1).toLowerCase() : "";
+      }
+
+      function getPreviewKind(ext, contentType) {
+        const type = String(contentType || "").split(";")[0].trim().toLowerCase();
+        if (type.startsWith("image/") || IMAGE_EXTS.has(ext)) return "image";
+        if (type.startsWith("video/") || VIDEO_EXTS.has(ext)) return "video";
+        if (type.startsWith("audio/") || AUDIO_EXTS.has(ext)) return "audio";
+        if (type === "application/pdf" || ext === "pdf") return "pdf";
+        if (OPEN_XML_EXTS.has(ext)) return OFFICE_KIND_BY_EXT[ext];
+        if (OFFICE_COMPAT_EXTS.has(ext)) return "office";
+        if (EMAIL_EXTS.has(ext)) return "email";
+        if (MARKDOWN_EXTS.has(ext)) return "markdown";
+        if (JSON_EXTS.has(ext)) return "json";
+        if (TABLE_EXTS.has(ext)) return "table";
+        if (ARCHIVE_EXTS.has(ext)) return "archive";
+        if (FONT_EXTS.has(ext)) return "font";
+        if (SUMMARY_EXTS.has(ext)) return "summary";
+        if (type.startsWith("text/") || TEXT_EXTS.has(ext)) return "text";
+        return "unsupported";
+      }
+
+      function updateHeader() {
+        document.title = `${state.fileName} | K-Vault`;
+        els.fileName.textContent = state.fileName;
+        els.fileType.textContent = displayTypeName(state.kind, state.extension);
+        els.subtitle.textContent = state.fileUrl;
+        if (els.storageHint) {
+          els.storageHint.textContent = shouldUseEnhancedViewer() ? "增强预览" : "本地预览";
+        }
+        if (state.fileSize > 0) {
+          els.fileSize.hidden = false;
+          els.fileSize.textContent = formatSize(state.fileSize);
+        }
+      }
+
+      function displayTypeName(kind, ext) {
+        const suffix = ext ? ext.toUpperCase() : "文件";
+        const names = {
+          image: "图片",
+          video: "视频",
+          audio: "音频",
+          pdf: "PDF",
+          docx: "Word 文档",
+          xlsx: "Excel 表格",
+          pptx: "演示文稿",
+          office: "Office 文档",
+          email: "邮件",
+          markdown: "Markdown 文档",
+          json: "JSON 数据",
+          table: "表格数据",
+          archive: "压缩包",
+          font: "字体",
+          summary: "安全摘要",
+          text: "文本"
+        };
+        return `${names[kind] || "暂不支持"} · ${suffix}`;
+      }
+
+      function formatSize(bytes) {
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        let value = Number(bytes) || 0;
+        let unit = 0;
+        while (value >= 1024 && unit < units.length - 1) {
+          value /= 1024;
+          unit += 1;
+        }
+        return `${value.toFixed(unit === 0 ? 0 : 2)} ${units[unit]}`;
+      }
+
+      function renderDeferredGate() {
+        setViewerClass();
+        clearViewer();
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "deferred-gate";
+
+        const icon = document.createElement("span");
+        icon.className = "gate-icon";
+        icon.textContent = state.kind === "video" || state.kind === "audio" ? "▶" : "◉";
+
+        const title = document.createElement("strong");
+        title.textContent = "点击加载预览";
+
+        const detail = document.createElement("span");
+        const sizeText = state.fileSize > 0 ? ` · ${formatSize(state.fileSize)}` : "";
+        detail.textContent = `${displayTypeName(state.kind, state.extension)}${sizeText}。预览器会在点击后再读取文件内容。`;
+
+        button.append(icon, title, detail);
+        button.addEventListener("click", async () => {
+          state.defer = false;
+          try {
+            await renderPreview();
+          } catch (error) {
+            console.error("Deferred preview failed:", error);
+            showStatus("预览加载失败", error.message || "文件无法预览。", "error");
+          }
+        });
+
+        els.viewer.appendChild(button);
+      }
+
+      async function renderPreview() {
+        setViewerClass();
+
+        if (shouldUseEnhancedViewer()) {
+          try {
+            await renderEnhancedFileViewer();
+            return;
+          } catch (error) {
+            console.warn("Enhanced viewer fallback:", error);
+            setViewerClass();
+          }
+        }
+
+        if (state.kind === "image") {
+          renderImage();
+        } else if (state.kind === "video") {
+          renderVideo();
+        } else if (state.kind === "audio") {
+          renderAudio();
+        } else if (state.kind === "pdf") {
+          renderPdf();
+        } else if (state.kind === "markdown") {
+          await renderMarkdown();
+        } else if (state.kind === "json") {
+          await renderJson();
+        } else if (state.kind === "table") {
+          await renderTableData();
+        } else if (state.kind === "archive") {
+          await renderArchive();
+        } else if (state.kind === "font") {
+          await renderFont();
+        } else if (state.kind === "email") {
+          await renderEmail();
+        } else if (state.kind === "office") {
+          renderCapabilitySummary();
+        } else if (state.kind === "summary") {
+          renderCapabilitySummary();
+        } else if (state.kind === "text") {
+          await renderText();
+        } else if (["docx", "xlsx", "pptx"].includes(state.kind)) {
+          await renderOpenXml(state.kind);
+        } else {
+          showStatus("此格式暂不支持在线预览", "可以直接下载后用本地应用打开。");
+        }
+      }
+
+      function shouldUseEnhancedViewer() {
+        if (!ENHANCED_VIEWER_EXTS.has(state.extension)) return false;
+        if (params.get("engine") === "local") return false;
+        if (/^data:/i.test(state.fileUrl)) return false;
+        return true;
+      }
+
+      async function renderEnhancedFileViewer() {
+        showStatus("正在启动增强预览", "命中重型业务附件，将按需加载专用浏览器端渲染器。");
+        await loadEnhancedViewerEngine();
+
+        clearViewer();
+        els.viewer.className = "viewer enhanced";
+        els.viewer.dataset.kind = state.kind;
+        if (els.storageHint) els.storageHint.textContent = "增强预览";
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "enhanced-view";
+        const shell = document.createElement("div");
+        shell.className = "enhanced-shell";
+        const viewer = document.createElement("flyfish-file-viewer");
+        viewer.setAttribute("src", state.fileUrl);
+        viewer.setAttribute("theme", "light");
+        viewer.setAttribute("toolbar-position", "bottom-right");
+        viewer.setAttribute("filename", state.fileName);
+        viewer.style.display = "block";
+        viewer.style.width = "100%";
+        viewer.style.height = "100%";
+        viewer.style.minHeight = "inherit";
+        shell.appendChild(viewer);
+        wrapper.appendChild(shell);
+        els.viewer.appendChild(wrapper);
+      }
+
+      async function loadEnhancedViewerEngine() {
+        if (customElements.get("flyfish-file-viewer")) return;
+        if (!enhancedViewerPromise) {
+          enhancedViewerPromise = new Promise((resolve, reject) => {
+            const existing = document.querySelector("script[data-file-viewer-engine]");
+            if (existing) {
+              existing.addEventListener("load", resolve, { once: true });
+              existing.addEventListener("error", () => reject(new Error("增强预览脚本加载失败。")), { once: true });
               return;
             }
-          } else {
-            this.fileUrl = file.startsWith('/') ? file : `/file/${file}`;
-            fileIdWithExt = file.split('/').pop();
+
+            const script = document.createElement("script");
+            script.src = params.get("engineCdn") || FILE_VIEWER_CDN;
+            script.async = true;
+            script.dataset.fileViewerEngine = "1";
+            script.onload = resolve;
+            script.onerror = () => reject(new Error("增强预览脚本加载失败。"));
+            document.head.appendChild(script);
+          }).then(() => customElements.whenDefined("flyfish-file-viewer"));
+        }
+        await Promise.race([
+          enhancedViewerPromise,
+          new Promise((_, reject) => window.setTimeout(() => reject(new Error("增强预览启动超时。")), 12000))
+        ]);
+      }
+
+      function setViewerClass() {
+        els.viewer.className = "viewer";
+        els.viewer.dataset.kind = state.kind;
+        if (state.kind === "image" || state.kind === "video" || state.kind === "audio") {
+          els.viewer.classList.add("media");
+        }
+      }
+
+      function clearViewer() {
+        els.viewer.replaceChildren();
+      }
+
+      function renderImage() {
+        clearViewer();
+        const image = document.createElement("img");
+        image.className = "preview-image";
+        image.alt = state.fileName;
+        image.src = state.fileUrl;
+        image.decoding = "async";
+        image.onerror = () => showStatus("图片加载失败", "文件不存在、无权限或浏览器不支持该图片格式。", "error");
+        els.viewer.appendChild(image);
+      }
+
+      function renderVideo() {
+        clearViewer();
+        const frame = document.createElement("div");
+        frame.className = "media-frame";
+        const video = document.createElement("video");
+        video.className = "preview-video";
+        video.controls = true;
+        video.playsInline = true;
+        video.preload = "metadata";
+        video.autoplay = state.autoplay;
+        video.src = state.fileUrl;
+        video.onerror = () => showStatus("视频加载失败", "请确认文件为浏览器可播放的 mp4/webm/mov 编码，并且直链可访问。", "error");
+        frame.appendChild(video);
+        els.viewer.appendChild(frame);
+      }
+
+      function renderAudio() {
+        clearViewer();
+        const panel = document.createElement("section");
+        panel.className = "audio-console";
+
+        const head = document.createElement("div");
+        head.className = "audio-head";
+
+        const mark = document.createElement("div");
+        mark.className = "audio-mark";
+        mark.textContent = "♪";
+
+        const title = document.createElement("div");
+        title.className = "audio-title";
+        const strong = document.createElement("strong");
+        strong.textContent = state.fileName;
+        const meta = document.createElement("span");
+        meta.textContent = `${displayTypeName(state.kind, state.extension)}${state.fileSize > 0 ? ` · ${formatSize(state.fileSize)}` : ""}`;
+        title.append(strong, meta);
+        head.append(mark, title);
+
+        const wave = document.createElement("div");
+        wave.className = "audio-wave";
+        for (let index = 0; index < 28; index += 1) {
+          const bar = document.createElement("span");
+          bar.style.height = `${24 + ((index * 37) % 68)}%`;
+          wave.appendChild(bar);
+        }
+
+        const audio = document.createElement("audio");
+        audio.className = "preview-audio";
+        audio.controls = true;
+        audio.preload = "metadata";
+        audio.autoplay = state.autoplay;
+        audio.src = state.fileUrl;
+        audio.onerror = () => showStatus("音频加载失败", "请确认文件为浏览器可播放的 mp3/wav/ogg/m4a 编码，并且直链可访问。", "error");
+        panel.append(head, wave, audio);
+        els.viewer.appendChild(panel);
+      }
+
+      function renderPdf() {
+        clearViewer();
+        const iframe = document.createElement("iframe");
+        iframe.className = "preview-pdf";
+        iframe.title = state.fileName;
+        iframe.src = `${state.fileUrl}#toolbar=1&navpanes=0&view=FitH`;
+        els.viewer.appendChild(iframe);
+      }
+
+      async function renderText() {
+        showStatus("正在读取文本", "请稍候");
+        const text = await fetchText("文本");
+        showTextView(text);
+      }
+
+      async function fetchText(label) {
+        const response = await fetch(state.fileUrl, { credentials: "include" });
+        if (!response.ok) throw new Error(`${label}读取失败：HTTP ${response.status}`);
+        return response.text();
+      }
+
+      function showTextView(text, className = "") {
+        clearViewer();
+        const pre = document.createElement("pre");
+        pre.className = `text-view ${className}`.trim();
+        pre.textContent = text;
+        els.viewer.appendChild(pre);
+      }
+
+      async function renderMarkdown() {
+        showStatus("正在渲染 Markdown", "以只读阅读面展示，不执行文档中的脚本。");
+        const text = await fetchText("Markdown");
+        clearViewer();
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "markdown-view";
+        const page = document.createElement("article");
+        page.className = "markdown-page";
+        appendMarkdown(page, text);
+        wrapper.appendChild(page);
+        els.viewer.appendChild(wrapper);
+      }
+
+      function appendMarkdown(page, source) {
+        const lines = String(source || "").replace(/\r\n/g, "\n").split("\n");
+        let paragraph = [];
+        let list = null;
+        let codeLines = null;
+
+        const flushParagraph = () => {
+          if (!paragraph.length) return;
+          const p = document.createElement("p");
+          appendInlineText(p, paragraph.join(" "));
+          page.appendChild(p);
+          paragraph = [];
+        };
+
+        const closeList = () => {
+          if (list) {
+            page.appendChild(list);
+            list = null;
+          }
+        };
+
+        for (const line of lines) {
+          const fence = line.match(/^```/);
+          if (fence && codeLines) {
+            const pre = document.createElement("pre");
+            const code = document.createElement("code");
+            code.textContent = codeLines.join("\n");
+            pre.appendChild(code);
+            page.appendChild(pre);
+            codeLines = null;
+            continue;
+          }
+          if (codeLines) {
+            codeLines.push(line);
+            continue;
+          }
+          if (fence) {
+            flushParagraph();
+            closeList();
+            codeLines = [];
+            continue;
           }
 
-          // 从 API 获取原始文件名（metadata.fileName）
-          // 如果 API 返回原始文件名则使用，否则回退到 URL 中的 fileId
-          try {
-            const infoResponse = await fetch(`/api/file-info/${fileIdWithExt}`);
-            if (infoResponse.ok) {
-              const info = await infoResponse.json();
-              // 优先使用 API 返回的原始文件名
-              this.fileName = info.fileName || info.originalName || fileIdWithExt;
-              this.fileSize = info.fileSize || 0;
-            } else {
-              // API 失败，回退到 URL 解析
-              this.fileName = fileIdWithExt;
-            }
-          } catch (e) {
-            console.warn('Failed to fetch file info:', e);
-            this.fileName = fileIdWithExt;
+          if (!line.trim()) {
+            flushParagraph();
+            closeList();
+            continue;
           }
 
-          // 获取文件扩展名
-          const ext = this.fileName.split('.').pop().toLowerCase();
-          this.fileType = ext.toUpperCase();
-          this.previewType = this.getPreviewType(ext);
-
-          // 加载设置
-          this.loadSettings();
-
-          // 如果是文本，获取内容
-          if (this.previewType === 'text') {
-            await this.loadTextContent();
-          } else if (this.previewType === 'video') {
-            // 视频使用统一媒体预览服务 iframe
-            this.loading = false;
-          } else if (this.previewType === 'audio') {
-            // 音频使用统一媒体预览服务 iframe
-            this.loading = false;
-          } else if (this.previewType === 'image') {
-            // 图片：先设置 loading = false 让图片开始加载，onImageLoad 会处理后续
-            this.loading = false;
-          } else if (this.previewType === 'pdf') {
-            // PDF：直接加载
-            this.loading = false;
-          } else if (this.previewType === 'office') {
-            // Office 文档：iframe 加载完成会设置 loading = false
-            this.loading = false;
-          } else if (this.previewType === 'unsupported') {
-            this.loading = false;
+          const heading = line.match(/^(#{1,3})\s+(.+)$/);
+          if (heading) {
+            flushParagraph();
+            closeList();
+            const level = Math.min(3, heading[1].length);
+            const h = document.createElement(`h${level}`);
+            appendInlineText(h, heading[2].trim());
+            page.appendChild(h);
+            continue;
           }
 
-          // 初始化 NSFW 检测
-          if (this.safeMode && this.previewType === 'image') {
-            await this.initNsfwDetection();
+          const quote = line.match(/^>\s?(.+)$/);
+          if (quote) {
+            flushParagraph();
+            closeList();
+            const block = document.createElement("blockquote");
+            appendInlineText(block, quote[1].trim());
+            page.appendChild(block);
+            continue;
           }
-        },
 
-        async loadTextContent() {
-          try {
-            const response = await fetch(this.fileUrl);
-            this.textContent = await response.text();
-            this.loading = false;
-          } catch (e) {
-            console.error('Load text error:', e);
-            this.loading = false;
+          const bullet = line.match(/^\s*(?:[-*+]|\d+\.)\s+(.+)$/);
+          if (bullet) {
+            flushParagraph();
+            if (!list) list = /^\s*\d+\./.test(line) ? document.createElement("ol") : document.createElement("ul");
+            const item = document.createElement("li");
+            appendInlineText(item, bullet[1].trim());
+            list.appendChild(item);
+            continue;
           }
-        },
 
-        async initNsfwDetection() {
-          try {
-            this.nsfwModel = await nsfwjs.load();
-          } catch (e) {
-            console.error('NSFW model load error:', e);
-          }
-        },
+          paragraph.push(line.trim());
+        }
 
-        async onImageLoad(e) {
-          this.loading = false;
-          
-          // NSFW 检测
-          if (this.safeMode && this.nsfwModel) {
-            try {
-              const predictions = await this.nsfwModel.classify(e.target);
-              const nsfw = predictions.find(p => 
-                (p.className === 'Porn' || p.className === 'Hentai' || p.className === 'Sexy') 
-                && p.probability > 0.5
-              );
-              this.isNsfw = !!nsfw;
-            } catch (e) {
-              console.error('NSFW detection error:', e);
-            }
-          }
-        },
+        if (codeLines) {
+          const pre = document.createElement("pre");
+          const code = document.createElement("code");
+          code.textContent = codeLines.join("\n");
+          pre.appendChild(code);
+          page.appendChild(pre);
+        }
+        flushParagraph();
+        closeList();
 
-        onLoadError() {
-          this.loading = false;
-          this.previewType = 'unsupported';
-        },
+        if (!page.childElementCount) {
+          const empty = document.createElement("p");
+          empty.textContent = "Markdown 文件没有可展示的内容。";
+          page.appendChild(empty);
+        }
+      }
 
-        // 销毁 iframe（彻底移除以停止播放）
-        destroyIframes() {
-          if (this.$refs.mediaIframe) {
-            this.$refs.mediaIframe.src = 'about:blank';
-          }
-        },
-
-        copyLink() {
-          const url = window.location.origin + this.fileUrl;
-          navigator.clipboard.writeText(url).then(() => {
-            alert('链接已复制');
-          });
-        },
-
-        downloadFile() {
-          // 尝试从 URL 参数或 metadata 获取原始文件名
-          const originalFileName = this.fileName;
-          const link = document.createElement('a');
-          link.href = this.fileUrl;
-          link.download = originalFileName;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        },
-
-        loadSettings() {
-          this.safeMode = localStorage.getItem('safeMode') !== 'false';
-          this.dataSaverMode = localStorage.getItem('dataSaverMode') === 'true';
-        },
-
-        saveSafeMode() {
-          localStorage.setItem('safeMode', this.safeMode);
-        },
-
-        saveDataSaverMode() {
-          localStorage.setItem('dataSaverMode', this.dataSaverMode);
-        },
-
-        async checkAuth() {
-          try {
-            const response = await fetch('/api/auth/check', { credentials: 'include' });
-            const data = await response.json();
-            if (data.authRequired && !data.authenticated) {
-              window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
-              return false;
-            }
-            return true;
-          } catch (e) {
-            console.error('Auth check failed:', e);
-            return true;
+      function appendInlineText(parent, text) {
+        const parts = String(text || "").split(/(`[^`]+`)/g);
+        for (const part of parts) {
+          if (part.startsWith("`") && part.endsWith("`") && part.length > 1) {
+            const code = document.createElement("code");
+            code.className = "inline-code";
+            code.textContent = part.slice(1, -1);
+            parent.appendChild(code);
+          } else if (part) {
+            parent.appendChild(document.createTextNode(part));
           }
         }
-      },
-      async mounted() {
-        const isAuth = await this.checkAuth();
-        if (!isAuth) return;
-        this.init();
-      },
-      beforeDestroy() {
-        // 销毁 iframe 防止后台继续播放
-        this.destroyIframes();
       }
-    });
+
+      async function renderJson() {
+        showStatus("正在解析 JSON", "会先在浏览器本地格式化，解析失败时回退为源码预览。");
+        const text = await fetchText("JSON");
+        let formatted = text;
+        let summary = "源码";
+        let valid = false;
+
+        try {
+          const parsed = JSON.parse(stripJsonComments(text));
+          formatted = JSON.stringify(parsed, null, 2);
+          summary = summarizeJsonValue(parsed);
+          valid = true;
+        } catch (error) {
+          summary = error.message || "解析失败";
+        }
+
+        const wrapper = createPagedView("data-view", "data-page");
+        const page = wrapper.firstElementChild;
+        appendPageHeading(page, valid ? "JSON 结构预览" : "JSON 源码预览", valid ? "已格式化为只读结构，适合快速检查 API 响应、配置和元数据。" : "文件不是严格 JSON，已按源码安全展示。");
+        page.appendChild(createDataSummary([
+          ["状态", valid ? "解析成功" : "回退源码"],
+          ["结构", summary],
+          ["大小", state.fileSize > 0 ? formatSize(state.fileSize) : "未知"],
+          ["行数", String(formatted.split("\n").length)]
+        ]));
+
+        const pre = document.createElement("pre");
+        pre.className = "data-code";
+        pre.textContent = formatted;
+        page.appendChild(pre);
+
+        clearViewer();
+        els.viewer.appendChild(wrapper);
+      }
+
+      function stripJsonComments(text) {
+        return String(text || "")
+          .replace(/^\uFEFF/, "")
+          .replace(/\/\*[\s\S]*?\*\//g, "")
+          .replace(/(^|[^:])\/\/.*$/gm, "$1")
+          .replace(/,\s*([}\]])/g, "$1");
+      }
+
+      function summarizeJsonValue(value) {
+        if (Array.isArray(value)) return `数组 · ${value.length} 项`;
+        if (value && typeof value === "object") return `对象 · ${Object.keys(value).length} 个键`;
+        if (value === null) return "null";
+        return typeof value;
+      }
+
+      async function renderTableData() {
+        showStatus("正在读取表格数据", "CSV/TSV 会转换成可横向滚动的只读表格。");
+        const text = await fetchText("表格");
+        const delimiter = state.extension === "tsv" ? "\t" : ",";
+        const rows = parseDelimited(text, delimiter).filter((row) => row.some((cell) => cell !== ""));
+
+        if (!rows.length) {
+          showStatus("表格为空", "没有读取到可展示的行。");
+          return;
+        }
+
+        const maxCols = Math.min(40, Math.max(...rows.map((row) => row.length)));
+        const previewRows = rows.slice(0, 260);
+        const wrapper = createPagedView("data-view", "data-page");
+        const page = wrapper.firstElementChild;
+        appendPageHeading(page, `${state.extension.toUpperCase()} 表格预览`, "只渲染前 260 行和前 40 列，避免大文件阻塞浏览器。");
+        page.appendChild(createDataSummary([
+          ["总行数", String(rows.length)],
+          ["预览行", String(previewRows.length)],
+          ["列数", String(maxCols)],
+          ["大小", state.fileSize > 0 ? formatSize(state.fileSize) : "未知"]
+        ]));
+
+        const scroll = document.createElement("div");
+        scroll.className = "table-scroll";
+        const table = document.createElement("table");
+        table.className = "table-preview";
+
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        const header = previewRows[0] || [];
+        for (let col = 0; col < maxCols; col += 1) {
+          const th = document.createElement("th");
+          th.textContent = header[col] || `列 ${col + 1}`;
+          headerRow.appendChild(th);
+        }
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        for (const row of previewRows.slice(1)) {
+          const tr = document.createElement("tr");
+          for (let col = 0; col < maxCols; col += 1) {
+            const td = document.createElement("td");
+            td.textContent = row[col] || "";
+            tr.appendChild(td);
+          }
+          tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+        scroll.appendChild(table);
+        page.appendChild(scroll);
+
+        clearViewer();
+        els.viewer.appendChild(wrapper);
+      }
+
+      function parseDelimited(text, delimiter) {
+        const rows = [];
+        let row = [];
+        let cell = "";
+        let quoted = false;
+        const input = String(text || "");
+
+        for (let index = 0; index < input.length; index += 1) {
+          const char = input[index];
+          const next = input[index + 1];
+
+          if (char === '"' && quoted && next === '"') {
+            cell += '"';
+            index += 1;
+            continue;
+          }
+          if (char === '"') {
+            quoted = !quoted;
+            continue;
+          }
+          if (!quoted && char === delimiter) {
+            row.push(cell);
+            cell = "";
+            continue;
+          }
+          if (!quoted && (char === "\n" || char === "\r")) {
+            if (char === "\r" && next === "\n") index += 1;
+            row.push(cell);
+            rows.push(row);
+            row = [];
+            cell = "";
+            continue;
+          }
+          cell += char;
+        }
+
+        row.push(cell);
+        rows.push(row);
+        return rows;
+      }
+
+      async function renderArchive() {
+        const ext = state.extension;
+        if (!LOCAL_ARCHIVE_EXTS.has(ext)) {
+          renderCapabilitySummary({
+            title: "压缩包已识别",
+            detail: "此压缩格式已进入增强预览候选。增强引擎不可用时，K-Vault 不会在本地回退模式整包下载解析，避免大文件阻塞浏览器。",
+            category: "归档容器",
+            notes: [["策略", "ZIP/JAR/TAR/TAR.GZ 可本地读取目录。"], ["建议", "RAR、7Z、XZ、ZST 等格式使用增强预览或下载到本地工具打开。"]]
+          });
+          return;
+        }
+        showStatus("正在读取压缩包目录", "仅在需要时解析目录，避免一次性展开大文件。");
+        const response = await fetch(state.fileUrl, { credentials: "include" });
+        if (!response.ok) throw new Error(`压缩包读取失败：HTTP ${response.status}`);
+        const buffer = await response.arrayBuffer();
+
+        if (ext === "zip" || ext === "jar") {
+          const zip = await loadZip(buffer);
+          renderArchivePage("ZIP 压缩包目录", zip.entries(), zip);
+          return;
+        }
+
+        if (ext === "tar") {
+          const tar = createTarSource(buffer);
+          renderArchivePage("TAR 归档目录", tar.entries(), tar);
+          return;
+        }
+
+        if ((ext === "tgz" || ext === "gz" || ext === "gzip") && "DecompressionStream" in window) {
+          try {
+            const stream = new Blob([buffer]).stream().pipeThrough(new DecompressionStream("gzip"));
+            const inflated = await new Response(stream).arrayBuffer();
+            if (ext === "tgz" || /\.tar\.gz$/i.test(state.fileName)) {
+              const tar = createTarSource(inflated);
+              renderArchivePage("TAR.GZ 归档目录", tar.entries(), tar);
+              return;
+            }
+          } catch (error) {
+            console.warn("gzip preview skipped:", error);
+          }
+        }
+
+        renderCapabilitySummary({
+          title: "压缩包已识别",
+          detail: "当前轻量预览已支持 ZIP/JAR 目录读取和 TAR/TAR.GZ 目录读取。RAR、7Z、BZ2、XZ 需要更重的 WASM 解压器，建议下载或后续接入专用渲染器。",
+          category: "归档容器"
+        });
+      }
+
+      function renderArchivePage(title, entries, source) {
+        const visibleEntries = entries.filter((entry) => !entry.name.endsWith("/")).slice(0, 500);
+        const wrapper = createPagedView("archive-view", "archive-page");
+        const page = wrapper.firstElementChild;
+        appendPageHeading(page, title, `共识别 ${entries.length} 个条目，当前展示前 ${visibleEntries.length} 个文件。`);
+        page.appendChild(createDataSummary([
+          ["格式", state.extension.toUpperCase()],
+          ["文件数", String(entries.filter((entry) => !entry.isDirectory).length)],
+          ["目录数", String(entries.filter((entry) => entry.isDirectory).length)],
+          ["大小", state.fileSize > 0 ? formatSize(state.fileSize) : "未知"]
+        ]));
+
+        const list = document.createElement("div");
+        list.className = "archive-list";
+        const previewBox = document.createElement("div");
+        previewBox.className = "archive-entry-preview";
+        previewBox.hidden = true;
+
+        for (const entry of visibleEntries) {
+          const row = document.createElement("div");
+          row.className = "archive-row";
+          const badge = document.createElement("strong");
+          badge.textContent = entry.isDirectory ? "目录" : (getExtension(entry.name) || "文件").slice(0, 4).toUpperCase();
+
+          const name = document.createElement("div");
+          name.className = "archive-name";
+          name.textContent = entry.name;
+
+          row.append(badge, name);
+          if (canPreviewArchiveEntry(entry)) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "btn";
+            button.textContent = "预览";
+            button.addEventListener("click", () => previewArchiveEntry(source, entry, previewBox));
+            row.appendChild(button);
+          }
+          list.appendChild(row);
+        }
+
+        page.append(list, previewBox);
+        clearViewer();
+        els.viewer.appendChild(wrapper);
+      }
+
+      function canPreviewArchiveEntry(entry) {
+        if (entry.isDirectory) return false;
+        const ext = getExtension(entry.name);
+        const size = Number(entry.uncompressedSize || 0);
+        if (size > 2 * 1024 * 1024) return false;
+        return IMAGE_EXTS.has(ext) || TEXT_EXTS.has(ext) || MARKDOWN_EXTS.has(ext) || JSON_EXTS.has(ext) || TABLE_EXTS.has(ext);
+      }
+
+      async function previewArchiveEntry(source, entry, previewBox) {
+        previewBox.hidden = false;
+        previewBox.replaceChildren();
+        const header = document.createElement("header");
+        header.textContent = entry.name;
+        previewBox.appendChild(header);
+
+        try {
+          const data = await source.bytes(entry.name);
+          if (!data) throw new Error("没有读取到内部文件内容。");
+          const ext = getExtension(entry.name);
+          if (IMAGE_EXTS.has(ext)) {
+            const image = document.createElement("img");
+            image.alt = entry.name;
+            image.src = URL.createObjectURL(new Blob([data], { type: mimeForExtension(ext) }));
+            image.style.maxWidth = "100%";
+            image.style.display = "block";
+            image.style.background = "#111827";
+            previewBox.appendChild(image);
+            return;
+          }
+
+          const text = new TextDecoder("utf-8").decode(data);
+          const pre = document.createElement("pre");
+          pre.textContent = JSON_EXTS.has(ext) ? tryFormatJson(text) : text;
+          previewBox.appendChild(pre);
+        } catch (error) {
+          const pre = document.createElement("pre");
+          pre.textContent = error.message || "内部文件预览失败。";
+          previewBox.appendChild(pre);
+        }
+      }
+
+      function tryFormatJson(text) {
+        try {
+          return JSON.stringify(JSON.parse(stripJsonComments(text)), null, 2);
+        } catch {
+          return text;
+        }
+      }
+
+      function mimeForExtension(ext) {
+        const map = {
+          jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif",
+          webp: "image/webp", svg: "image/svg+xml", bmp: "image/bmp", ico: "image/x-icon",
+          avif: "image/avif"
+        };
+        return map[ext] || "application/octet-stream";
+      }
+
+      function createTarSource(arrayBuffer) {
+        const bytes = new Uint8Array(arrayBuffer);
+        const entries = [];
+        let offset = 0;
+
+        while (offset + 512 <= bytes.length) {
+          const header = bytes.slice(offset, offset + 512);
+          if (header.every((byte) => byte === 0)) break;
+
+          const name = readTarString(header, 0, 100);
+          const prefix = readTarString(header, 345, 155);
+          const fullName = [prefix, name].filter(Boolean).join("/");
+          const size = parseInt(readTarString(header, 124, 12).trim() || "0", 8) || 0;
+          const typeFlag = String.fromCharCode(header[156] || 0);
+          const dataStart = offset + 512;
+          const isDirectory = typeFlag === "5" || fullName.endsWith("/");
+
+          if (fullName) {
+            entries.push({
+              name: fullName,
+              uncompressedSize: size,
+              compressedSize: size,
+              method: "tar",
+              dataStart,
+              isDirectory
+            });
+          }
+
+          offset = dataStart + Math.ceil(size / 512) * 512;
+        }
+
+        return {
+          entries: () => entries,
+          bytes: async (name) => {
+            const entry = entries.find((item) => item.name === name);
+            if (!entry) return null;
+            return bytes.slice(entry.dataStart, entry.dataStart + entry.uncompressedSize);
+          }
+        };
+      }
+
+      function readTarString(bytes, start, length) {
+        return new TextDecoder("utf-8")
+          .decode(bytes.slice(start, start + length))
+          .replace(/\0.*$/g, "");
+      }
+
+      async function renderFont() {
+        showStatus("正在加载字体样张", "字体只会临时注册到当前预览页。");
+        if (!("FontFace" in window)) {
+          showStatus("当前浏览器不支持 FontFace 预览", "可以下载字体后用本地字体管理器查看。", "error");
+          return;
+        }
+
+        const response = await fetch(state.fileUrl, { credentials: "include" });
+        if (!response.ok) throw new Error(`字体读取失败：HTTP ${response.status}`);
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const family = `KVaultPreviewFont${Date.now()}`;
+
+        try {
+          const face = new FontFace(family, `url(${objectUrl})`);
+          await face.load();
+          document.fonts.add(face);
+        } catch (error) {
+          URL.revokeObjectURL(objectUrl);
+          showStatus("字体加载失败", error.message || "浏览器无法解析该字体文件。", "error");
+          return;
+        }
+
+        const wrapper = createPagedView("font-view", "font-page");
+        const page = wrapper.firstElementChild;
+        appendPageHeading(page, "字体样张", "使用浏览器字体接口在本页临时加载，离开预览后不会写入系统。");
+        page.appendChild(createDataSummary([
+          ["格式", state.extension.toUpperCase()],
+          ["大小", state.fileSize > 0 ? formatSize(state.fileSize) : "未知"],
+          ["来源", "K-Vault 文件直链"],
+          ["状态", "已加载"]
+        ]));
+
+        const sample = document.createElement("div");
+        sample.className = "font-sample";
+        sample.style.fontFamily = `"${family}", sans-serif`;
+        const large = document.createElement("p");
+        large.className = "font-large";
+        large.textContent = "K-Vault 文件预览 0123456789";
+        const body = document.createElement("p");
+        body.className = "font-body";
+        body.textContent = "中文样张：轻量、清晰、可审阅。英文字符样张：Aa Bb Cc 0123456789。";
+        sample.append(large, body);
+        page.appendChild(sample);
+
+        clearViewer();
+        els.viewer.appendChild(wrapper);
+      }
+
+      async function renderEmail() {
+        if (state.extension === "msg") {
+          renderCapabilitySummary({
+            title: "Outlook 邮件已识别",
+            detail: "MSG 属于复合二进制邮件容器。增强预览可用时会交给 File Viewer 邮件渲染器；本地回退模式提供安全摘要，避免误读私有二进制内容。",
+            category: "邮件归档"
+          });
+          return;
+        }
+
+        showStatus("正在解析邮件", "会在浏览器本地提取头信息、正文和附件清单。");
+        const text = await fetchText("邮件");
+        const mailText = state.extension === "mbox" ? firstMboxMessage(text) : text;
+        const parsed = parseEmailMessage(mailText);
+        clearViewer();
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "email-view";
+        const page = document.createElement("article");
+        page.className = "email-page";
+        appendPageHeading(page, parsed.subject || "邮件预览", "只读展示邮件头信息、正文和附件名称，不执行邮件中的脚本。");
+
+        const header = document.createElement("div");
+        header.className = "email-header";
+        appendEmailField(header, "发件人", parsed.from || "未知");
+        appendEmailField(header, "收件人", parsed.to || "未知");
+        appendEmailField(header, "时间", parsed.date || "未知");
+        appendEmailField(header, "主题", parsed.subject || "无主题");
+        page.appendChild(header);
+
+        const body = document.createElement("div");
+        body.className = "email-body";
+        body.textContent = parsed.body || "没有提取到可读正文。";
+        page.appendChild(body);
+
+        if (parsed.attachments.length) {
+          const list = document.createElement("div");
+          list.className = "email-attachments";
+          const heading = document.createElement("h3");
+          heading.textContent = `附件清单（${parsed.attachments.length}）`;
+          list.appendChild(heading);
+          for (const attachment of parsed.attachments) {
+            const row = document.createElement("div");
+            row.className = "email-attachment";
+            const name = document.createElement("span");
+            name.textContent = attachment.name || "未命名附件";
+            const meta = document.createElement("small");
+            meta.textContent = attachment.type || "附件";
+            row.append(name, meta);
+            list.appendChild(row);
+          }
+          page.appendChild(list);
+        }
+
+        wrapper.appendChild(page);
+        els.viewer.appendChild(wrapper);
+      }
+
+      function appendEmailField(parent, label, value) {
+        const strong = document.createElement("strong");
+        strong.textContent = label;
+        const span = document.createElement("span");
+        span.textContent = decodeMimeWords(value);
+        parent.append(strong, span);
+      }
+
+      function firstMboxMessage(text) {
+        const normalized = String(text || "").replace(/\r\n/g, "\n");
+        const parts = normalized.split(/\nFrom .*\n/g).filter((part) => part.trim());
+        return parts[0] || normalized;
+      }
+
+      function parseEmailMessage(raw) {
+        const normalized = String(raw || "").replace(/\r\n/g, "\n");
+        const splitIndex = normalized.search(/\n\n/);
+        const headerText = splitIndex >= 0 ? normalized.slice(0, splitIndex) : "";
+        const bodyText = splitIndex >= 0 ? normalized.slice(splitIndex + 2) : normalized;
+        const headers = parseEmailHeaders(headerText);
+        const contentType = headers["content-type"] || "";
+        const boundary = (contentType.match(/boundary="?([^";]+)"?/i) || [])[1] || "";
+        const attachments = [];
+        let body = bodyText;
+
+        if (boundary) {
+          const parts = bodyText.split(`--${boundary}`);
+          const readable = [];
+          for (const part of parts) {
+            const index = part.search(/\n\n/);
+            if (index < 0) continue;
+            const partHeaders = parseEmailHeaders(part.slice(0, index));
+            const partBody = part.slice(index + 2).trim();
+            const disposition = partHeaders["content-disposition"] || "";
+            const partType = partHeaders["content-type"] || "";
+            const fileName = extractMailFileName(disposition) || extractMailFileName(partType);
+
+            if (/attachment/i.test(disposition) || fileName) {
+              attachments.push({ name: fileName || "未命名附件", type: cleanContentType(partType) });
+            } else if (/text\/plain/i.test(partType)) {
+              readable.push(decodeTransferText(partBody, partHeaders["content-transfer-encoding"]));
+            } else if (!readable.length && /text\/html/i.test(partType)) {
+              readable.push(stripHtml(decodeTransferText(partBody, partHeaders["content-transfer-encoding"])));
+            }
+          }
+          body = readable.filter(Boolean).join("\n\n");
+        } else if (/text\/html/i.test(contentType)) {
+          body = stripHtml(bodyText);
+        }
+
+        return {
+          from: headers.from || "",
+          to: headers.to || "",
+          date: headers.date || "",
+          subject: decodeMimeWords(headers.subject || ""),
+          body: decodeTransferText(body.trim(), headers["content-transfer-encoding"]),
+          attachments
+        };
+      }
+
+      function parseEmailHeaders(text) {
+        const headers = {};
+        let current = "";
+        for (const line of String(text || "").split("\n")) {
+          if (/^\s/.test(line) && current) {
+            headers[current] += ` ${line.trim()}`;
+            continue;
+          }
+          const match = line.match(/^([^:]+):\s*(.*)$/);
+          if (!match) continue;
+          current = match[1].toLowerCase();
+          headers[current] = match[2].trim();
+        }
+        return headers;
+      }
+
+      function extractMailFileName(value) {
+        const encoded = String(value || "").match(/filename\*=UTF-8''([^;]+)/i);
+        if (encoded) {
+          try {
+            return decodeURIComponent(encoded[1].replace(/^"|"$/g, ""));
+          } catch {
+            return encoded[1];
+          }
+        }
+        const plain = String(value || "").match(/filename="?([^";]+)"?/i) || String(value || "").match(/name="?([^";]+)"?/i);
+        return plain ? decodeMimeWords(plain[1]) : "";
+      }
+
+      function cleanContentType(value) {
+        return String(value || "").split(";")[0].trim() || "附件";
+      }
+
+      function decodeTransferText(text, encoding = "") {
+        const value = String(text || "").trim();
+        if (/base64/i.test(encoding)) {
+          try {
+            const binary = atob(value.replace(/\s/g, ""));
+            return new TextDecoder("utf-8").decode(Uint8Array.from(binary, (char) => char.charCodeAt(0)));
+          } catch {
+            return value;
+          }
+        }
+        if (/quoted-printable/i.test(encoding)) {
+          return value
+            .replace(/=\n/g, "")
+            .replace(/=([A-Fa-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+        }
+        return value;
+      }
+
+      function decodeMimeWords(value) {
+        return String(value || "").replace(/=\?([^?]+)\?([BQ])\?([^?]+)\?=/gi, (_, charset, mode, text) => {
+          try {
+            if (mode.toUpperCase() === "B") {
+              const binary = atob(text);
+              return new TextDecoder(charset).decode(Uint8Array.from(binary, (char) => char.charCodeAt(0)));
+            }
+            const decoded = text.replace(/_/g, " ").replace(/=([A-Fa-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+            return new TextDecoder(charset).decode(Uint8Array.from(decoded, (char) => char.charCodeAt(0)));
+          } catch {
+            return text;
+          }
+        });
+      }
+
+      function stripHtml(html) {
+        const template = document.createElement("template");
+        template.innerHTML = String(html || "");
+        template.content.querySelectorAll("script, style, iframe, object").forEach((node) => node.remove());
+        return template.content.textContent.replace(/\n{3,}/g, "\n\n").trim();
+      }
+
+      function renderCapabilitySummary(options = {}) {
+        const info = getCapabilityInfo(state.extension);
+        const title = options.title || info.title;
+        const detail = options.detail || info.detail;
+        const category = options.category || info.category;
+        const notes = options.notes || info.notes;
+        const wrapper = createPagedView("summary-view", "summary-page");
+        const page = wrapper.firstElementChild;
+
+        const icon = document.createElement("div");
+        icon.className = "summary-icon";
+        icon.textContent = (state.extension || "文件").slice(0, 3).toUpperCase();
+        page.appendChild(icon);
+        appendPageHeading(page, title, detail);
+        page.appendChild(createDataSummary([
+          ["格式", state.extension ? state.extension.toUpperCase() : "未知"],
+          ["类别", category],
+          ["大小", state.fileSize > 0 ? formatSize(state.fileSize) : "未知"],
+          ["处理", "安全摘要"]
+        ]));
+
+        const stack = document.createElement("div");
+        stack.className = "summary-stack";
+        for (const item of notes) {
+          const chip = document.createElement("div");
+          chip.className = "summary-chip";
+          const strong = document.createElement("strong");
+          strong.textContent = item[0];
+          const span = document.createElement("span");
+          span.textContent = item[1];
+          chip.append(strong, span);
+          stack.appendChild(chip);
+        }
+        page.appendChild(stack);
+
+        clearViewer();
+        els.viewer.appendChild(wrapper);
+      }
+
+      function getCapabilityInfo(ext) {
+        const groups = [
+          {
+            match: ["doc", "dot", "rtf", "odt", "xls", "xlsb", "xlt", "xltm", "ods", "fods", "numbers", "ppt", "odp"],
+            title: "Office 兼容文档已识别",
+            category: "办公文档",
+            detail: "增强预览可用时会交给 File Viewer 的 Office 链路处理；本地回退模式会保留文件信息和下载入口。",
+            notes: [["覆盖", "包含旧版 Word、Excel、PPT、RTF、OpenDocument 等业务文档。"], ["建议", "若需要完全还原版式，可保持增强预览资产可访问。"]]
+          },
+          {
+            match: ["ofd"],
+            title: "OFD 版式文档已识别",
+            category: "国产版式文档",
+            detail: "增强预览可用时会交给 OFD 浏览器端渲染器；回退模式提供安全摘要和下载入口。",
+            notes: [["场景", "电子发票、公文、归档材料。"], ["边界", "OFD 高保真渲染需要专用解析器。"]]
+          },
+          {
+            match: ["eml", "msg", "mbox"],
+            title: "邮件归档已识别",
+            category: "邮件",
+            detail: "EML/MBOX 会尽量在本地提取正文和附件名；MSG 可交给增强预览邮件链路，回退时只做安全摘要。",
+            notes: [["安全", "邮件 HTML 不会执行脚本。"], ["附件", "增强预览可进一步处理邮件中的附件预览。"]]
+          },
+          {
+            match: ["dwg", "dxf", "dwf", "dwfx", "xps"],
+            title: "工程图纸已识别",
+            category: "工程图纸（CAD/DWF）",
+            detail: "K-Vault 已识别工程图纸类型。当前轻量预览提供安全摘要，完整矢量/图层渲染建议后续接入专用 CAD 渲染器。",
+            notes: [["边界", "不在浏览器里执行不可信二进制指令。"], ["建议", "业务侧优先提供 PDF、DXF 或受控 CAD 预览服务。"]]
+          },
+          {
+            match: ["drawio", "dio", "excalidraw", "mermaid", "mmd", "plantuml", "puml"],
+            title: "绘图/流程图已识别",
+            category: "绘图文件",
+            detail: "增强预览可用时会尝试渲染 Draw.io、Excalidraw、Mermaid、PlantUML 等图形；回退模式给出安全摘要。",
+            notes: [["场景", "架构图、流程图、白板草图、UML。"], ["策略", "图形渲染属于按需加载能力，不进入后台首屏。"]]
+          },
+          {
+            match: ["xmind"],
+            title: "XMind 脑图已识别",
+            category: "脑图",
+            detail: "增强预览可用时会解析 XMind 包结构并渲染脑图；回退模式保留安全摘要。",
+            notes: [["场景", "知识结构、会议纪要、项目规划。"], ["建议", "需要高质量脑图缩放时使用增强预览链路。"]]
+          },
+          {
+            match: ["geojson", "kml", "gpx", "shp"],
+            title: "地理数据已识别",
+            category: "地理数据",
+            detail: "增强预览可用时会尝试转为 GeoJSON 并渲染点线面；回退模式不解析坐标数据。",
+            notes: [["场景", "轨迹、边界、轻量 GIS 数据。"], ["边界", "复杂坐标系和大体积 SHP 需要专用渲染器。"]]
+          },
+          {
+            match: ["psd", "ai", "eps"],
+            title: "设计资产已识别",
+            category: "设计文件",
+            detail: "当前提供文件摘要。PSD 图层、AI/PDF-backed 文件和 EPS 需要专用解析器才能高保真展示。",
+            notes: [["可落地能力", "图片类资产仍会直接走浏览器原生解码。"], ["建议", "设计源文件可同时导出 PNG/SVG 作为快速预览。"]]
+          },
+          {
+            match: ["sqlite", "sqlite3", "db", "parquet", "avro", "wasm", "webarchive"],
+            title: "结构化数据已识别",
+            category: "数据资产",
+            detail: "当前提供安全摘要。SQLite、Parquet、Avro 和 WASM 需要按需加载 WASM 与后台线程后才适合完整解析。",
+            notes: [["安全", "不执行 WASM，也不展开未知二进制内容。"], ["建议", "大数据文件优先在业务层提供抽样或分页索引。"]]
+          },
+          {
+            match: ["glb", "gltf", "obj", "stl", "ply", "fbx", "dae", "3ds", "3mf", "usd", "usdz", "kmz", "step", "stp", "iges", "igs", "ifc"],
+            title: "三维 / BIM 文件已识别",
+            category: "三维模型",
+            detail: "当前提供安全摘要。完整三维预览需要 Three.js 加载器或更重的几何 WASM 内核。",
+            notes: [["推荐格式", "浏览器预览优先使用 GLB/GLTF。"], ["边界", "STEP/IFC/IGES 通常需要专业几何内核。"]]
+          },
+          {
+            match: ["epub", "umd"],
+            title: "电子书已识别",
+            category: "电子书",
+            detail: "增强预览可用时会读取目录与章节资源；回退模式提供安全摘要。",
+            notes: [["场景", "培训手册、长篇阅读材料。"], ["策略", "正文解析按需执行，避免大文件阻塞。"]]
+          },
+          {
+            match: ["olb", "dra", "gds", "oas", "oasis"],
+            title: "EDA 文件已识别",
+            category: "电子设计附件",
+            detail: "增强预览可用时会尝试读取版图或封装结构；回退模式只做安全摘要。",
+            notes: [["场景", "元件库、封装图纸、芯片版图初筛。"], ["边界", "预览不替代专业电气/几何校核。"]]
+          },
+          {
+            match: ["typ", "typst"],
+            title: "专业文档类型已识别",
+            category: "排版文档",
+            detail: "当前提供安全摘要。此类格式可后续按业务优先级接入独立渲染器，避免拖慢普通文件首屏。",
+            notes: [["策略", "命中格式后再加载重型依赖。"], ["建议", "常用附件优先沉淀为 PDF、Markdown、图片或稳定交换格式。"]]
+          }
+        ];
+
+        const found = groups.find((group) => group.match.includes(ext));
+        return found || {
+          title: "文件类型已识别",
+          category: "其他文件",
+          detail: "当前格式暂未提供高保真在线渲染，K-Vault 会保留下载和直链能力。",
+          notes: [["下一步", "可按真实业务样本补充专用预览链路。"], ["安全", "未知格式不会在预览页执行。"]]
+        };
+      }
+
+      function createPagedView(wrapperClass, pageClass) {
+        const wrapper = document.createElement("div");
+        wrapper.className = wrapperClass;
+        const page = document.createElement("article");
+        page.className = pageClass;
+        wrapper.appendChild(page);
+        return wrapper;
+      }
+
+      function appendPageHeading(page, title, detail) {
+        const heading = document.createElement("h2");
+        heading.textContent = title;
+        const p = document.createElement("p");
+        p.textContent = detail;
+        page.append(heading, p);
+      }
+
+      function createDataSummary(items) {
+        const summary = document.createElement("div");
+        summary.className = "data-summary";
+        for (const [label, value] of items) {
+          const chip = document.createElement("div");
+          chip.className = "data-chip";
+          const strong = document.createElement("strong");
+          strong.textContent = label;
+          const span = document.createElement("span");
+          span.textContent = value;
+          chip.append(strong, span);
+          summary.appendChild(chip);
+        }
+        return summary;
+      }
+
+      async function renderOpenXml(kind) {
+        if (!("DecompressionStream" in window)) {
+          showStatus("当前浏览器不支持本地 Office 解压预览", "请使用最新版 Chrome、Edge 或 Firefox，或下载文件后打开。", "error");
+          return;
+        }
+
+        showStatus("正在解析文档", "文档会在浏览器本地渲染，不会发送到外部预览服务。");
+        const response = await fetch(state.fileUrl, { credentials: "include" });
+        if (!response.ok) throw new Error(`文档读取失败：HTTP ${response.status}`);
+
+        const zip = await loadZip(await response.arrayBuffer());
+        if (kind === "docx") await renderDocx(zip);
+        if (kind === "xlsx") await renderXlsx(zip);
+        if (kind === "pptx") await renderPptx(zip);
+      }
+
+      async function renderDocx(zip) {
+        const documentXml = await zip.text("word/document.xml");
+        if (!documentXml) throw new Error("DOCX 缺少 word/document.xml。");
+
+        const xml = parseXml(documentXml);
+        const body = firstByLocalName(xml, "body") || xml.documentElement;
+        const page = createDocPage();
+
+        for (const child of elementChildren(body)) {
+          if (localName(child) === "p") {
+            const paragraph = createDocParagraph(child);
+            if (paragraph) page.appendChild(paragraph);
+          } else if (localName(child) === "tbl") {
+            page.appendChild(createDocTable(child));
+          }
+        }
+
+        if (!page.childElementCount) {
+          const empty = document.createElement("p");
+          empty.textContent = "文档没有可提取的正文内容。";
+          page.appendChild(empty);
+        }
+
+        showDocPage(page);
+      }
+
+      async function renderXlsx(zip) {
+        const sharedStrings = await readSharedStrings(zip);
+        const worksheetNames = zip.names()
+          .filter((name) => /^xl\/worksheets\/sheet\d+\.xml$/i.test(name))
+          .sort(compareNumberedPath);
+
+        if (!worksheetNames.length) throw new Error("XLSX 缺少 worksheet 数据。");
+
+        const page = createDocPage();
+        for (let index = 0; index < Math.min(worksheetNames.length, 5); index += 1) {
+          const xml = parseXml(await zip.text(worksheetNames[index]));
+          const section = document.createElement("section");
+          section.className = "sheet-section";
+
+          const heading = document.createElement("h2");
+          heading.textContent = `Sheet ${index + 1}`;
+          section.appendChild(heading);
+
+          section.appendChild(createSheetTable(xml, sharedStrings));
+          page.appendChild(section);
+        }
+        showDocPage(page);
+      }
+
+      async function renderPptx(zip) {
+        const slideNames = zip.names()
+          .filter((name) => /^ppt\/slides\/slide\d+\.xml$/i.test(name))
+          .sort(compareNumberedPath);
+
+        if (!slideNames.length) throw new Error("PPTX 缺少 slide 数据。");
+
+        const page = createDocPage();
+        for (let index = 0; index < Math.min(slideNames.length, 30); index += 1) {
+          const xml = parseXml(await zip.text(slideNames[index]));
+          const section = document.createElement("section");
+          section.className = "slide-section";
+
+          const heading = document.createElement("h2");
+          heading.textContent = `Slide ${index + 1}`;
+          section.appendChild(heading);
+
+          const paragraphs = allByLocalName(xml, "p")
+            .map((node) => collectText(node).trim())
+            .filter(Boolean);
+
+          if (paragraphs.length) {
+            for (const text of paragraphs) {
+              const p = document.createElement("p");
+              p.textContent = text;
+              section.appendChild(p);
+            }
+          } else {
+            const p = document.createElement("p");
+            p.textContent = "此页没有可提取文本。";
+            section.appendChild(p);
+          }
+
+          page.appendChild(section);
+        }
+        showDocPage(page);
+      }
+
+      function createDocPage() {
+        const page = document.createElement("article");
+        page.className = "doc-page";
+        return page;
+      }
+
+      function showDocPage(page) {
+        clearViewer();
+        const wrapper = document.createElement("div");
+        wrapper.className = "doc-view";
+        wrapper.appendChild(page);
+        els.viewer.appendChild(wrapper);
+      }
+
+      function createDocParagraph(node) {
+        const text = collectText(node);
+        const style = getParagraphStyle(node).toLowerCase();
+        const trimmed = text.trim();
+
+        if (!trimmed && !text.includes("\n")) return null;
+
+        let tag = "p";
+        if (style.includes("title")) tag = "h1";
+        if (style.includes("heading1") || style.includes("heading 1")) tag = "h2";
+        if (style.includes("heading2") || style.includes("heading 2")) tag = "h3";
+
+        const element = document.createElement(tag);
+        element.textContent = text;
+        return element;
+      }
+
+      function createDocTable(tbl) {
+        const table = document.createElement("table");
+        for (const rowNode of elementChildren(tbl).filter((node) => localName(node) === "tr")) {
+          const row = document.createElement("tr");
+          const cells = elementChildren(rowNode).filter((node) => localName(node) === "tc");
+          for (const cellNode of cells) {
+            const cell = document.createElement("td");
+            const parts = allByLocalName(cellNode, "p")
+              .map((p) => collectText(p).trim())
+              .filter(Boolean);
+            cell.textContent = parts.join("\n");
+            row.appendChild(cell);
+          }
+          table.appendChild(row);
+        }
+        return table;
+      }
+
+      function getParagraphStyle(node) {
+        const pPr = elementChildren(node).find((child) => localName(child) === "pPr");
+        if (!pPr) return "";
+        const pStyle = elementChildren(pPr).find((child) => localName(child) === "pStyle");
+        return pStyle ? attr(pStyle, "val") : "";
+      }
+
+      async function readSharedStrings(zip) {
+        const xmlText = await zip.text("xl/sharedStrings.xml");
+        if (!xmlText) return [];
+        const xml = parseXml(xmlText);
+        return allByLocalName(xml, "si").map((node) => collectText(node));
+      }
+
+      function createSheetTable(xml, sharedStrings) {
+        const table = document.createElement("table");
+        table.className = "sheet-table";
+        const rows = allByLocalName(xml, "row").slice(0, 200);
+        let maxCol = 0;
+        const matrix = rows.map((row) => {
+          const values = [];
+          for (const cell of elementChildren(row).filter((node) => localName(node) === "c")) {
+            const ref = attr(cell, "r");
+            const col = ref ? columnIndex(ref.replace(/\d+/g, "")) : values.length;
+            values[col] = readCellValue(cell, sharedStrings);
+            maxCol = Math.max(maxCol, col);
+          }
+          return values;
+        });
+
+        for (const values of matrix) {
+          const tr = document.createElement("tr");
+          for (let col = 0; col <= Math.min(maxCol, 30); col += 1) {
+            const td = document.createElement("td");
+            td.textContent = values[col] || "";
+            tr.appendChild(td);
+          }
+          table.appendChild(tr);
+        }
+
+        return table;
+      }
+
+      function readCellValue(cell, sharedStrings) {
+        const type = attr(cell, "t");
+        if (type === "inlineStr") {
+          const inline = firstByLocalName(cell, "is");
+          return inline ? collectText(inline) : "";
+        }
+
+        const valueNode = firstByLocalName(cell, "v");
+        const raw = valueNode ? valueNode.textContent : "";
+        if (type === "s") return sharedStrings[Number(raw)] || "";
+        return raw;
+      }
+
+      function columnIndex(letters) {
+        let value = 0;
+        for (const char of String(letters || "").toUpperCase()) {
+          const code = char.charCodeAt(0);
+          if (code < 65 || code > 90) continue;
+          value = value * 26 + (code - 64);
+        }
+        return Math.max(0, value - 1);
+      }
+
+      function compareNumberedPath(left, right) {
+        const a = Number((left.match(/(\d+)(?=\.xml$)/) || [0, 0])[1]);
+        const b = Number((right.match(/(\d+)(?=\.xml$)/) || [0, 0])[1]);
+        return a - b;
+      }
+
+      function parseXml(text) {
+        const xml = new DOMParser().parseFromString(text, "application/xml");
+        if (xml.getElementsByTagName("parsererror").length) {
+          throw new Error("文档 XML 解析失败。");
+        }
+        return xml;
+      }
+
+      function collectText(node) {
+        let output = "";
+        const walk = (current) => {
+          for (const child of current.childNodes || []) {
+            const name = localName(child);
+            if (name === "t") {
+              output += child.textContent || "";
+            } else if (name === "tab") {
+              output += "\t";
+            } else if (name === "br" || name === "cr") {
+              output += "\n";
+            } else {
+              walk(child);
+            }
+          }
+        };
+        walk(node);
+        return output;
+      }
+
+      function allByLocalName(root, name) {
+        const found = [];
+        const walk = (node) => {
+          if (localName(node) === name) found.push(node);
+          for (const child of node.childNodes || []) walk(child);
+        };
+        walk(root);
+        return found;
+      }
+
+      function firstByLocalName(root, name) {
+        return allByLocalName(root, name)[0] || null;
+      }
+
+      function elementChildren(node) {
+        return Array.from(node.childNodes || []).filter((child) => child.nodeType === 1);
+      }
+
+      function localName(node) {
+        return String(node?.localName || node?.nodeName || "").split(":").pop();
+      }
+
+      function attr(node, name) {
+        if (!node) return "";
+        return node.getAttribute(name)
+          || node.getAttribute(`w:${name}`)
+          || node.getAttribute(`r:${name}`)
+          || node.getAttribute(`a:${name}`)
+          || "";
+      }
+
+      async function loadZip(arrayBuffer) {
+        const bytes = new Uint8Array(arrayBuffer);
+        const view = new DataView(arrayBuffer);
+        const eocd = findEndOfCentralDirectory(view);
+        if (eocd < 0) throw new Error("文档不是有效的 ZIP/OpenXML 文件。");
+
+        const totalEntries = view.getUint16(eocd + 10, true);
+        const centralDirectoryOffset = view.getUint32(eocd + 16, true);
+        const entries = new Map();
+        let offset = centralDirectoryOffset;
+
+        for (let index = 0; index < totalEntries; index += 1) {
+          if (view.getUint32(offset, true) !== 0x02014b50) break;
+
+          const flags = view.getUint16(offset + 8, true);
+          const method = view.getUint16(offset + 10, true);
+          const compressedSize = view.getUint32(offset + 20, true);
+          const uncompressedSize = view.getUint32(offset + 24, true);
+          const fileNameLength = view.getUint16(offset + 28, true);
+          const extraLength = view.getUint16(offset + 30, true);
+          const commentLength = view.getUint16(offset + 32, true);
+          const localHeaderOffset = view.getUint32(offset + 42, true);
+          const nameBytes = bytes.slice(offset + 46, offset + 46 + fileNameLength);
+          const fileName = decodeZipName(nameBytes, flags);
+
+          entries.set(fileName, {
+            method,
+            compressedSize,
+            uncompressedSize,
+            localHeaderOffset,
+            isDirectory: fileName.endsWith("/")
+          });
+
+          offset += 46 + fileNameLength + extraLength + commentLength;
+        }
+
+        async function bytesFor(name) {
+          const entry = entries.get(name);
+          if (!entry) return null;
+          if (view.getUint32(entry.localHeaderOffset, true) !== 0x04034b50) {
+            throw new Error(`ZIP 内部条目头缺失：${name}`);
+          }
+
+          const fileNameLength = view.getUint16(entry.localHeaderOffset + 26, true);
+          const extraLength = view.getUint16(entry.localHeaderOffset + 28, true);
+          const start = entry.localHeaderOffset + 30 + fileNameLength + extraLength;
+          const compressed = bytes.slice(start, start + entry.compressedSize);
+
+          if (entry.method === 0) return compressed;
+          if (entry.method === 8) return inflateRaw(compressed);
+          throw new Error(`不支持的 ZIP 压缩方式：${entry.method}`);
+        }
+
+        return {
+          names: () => Array.from(entries.keys()),
+          entries: () => Array.from(entries, ([name, entry]) => ({ name, ...entry })),
+          bytes: bytesFor,
+          text: async (name) => {
+            const data = await bytesFor(name);
+            return data ? new TextDecoder("utf-8").decode(data) : "";
+          }
+        };
+      }
+
+      function findEndOfCentralDirectory(view) {
+        const min = Math.max(0, view.byteLength - 0xffff - 22);
+        for (let offset = view.byteLength - 22; offset >= min; offset -= 1) {
+          if (view.getUint32(offset, true) === 0x06054b50) return offset;
+        }
+        return -1;
+      }
+
+      function decodeZipName(bytes, flags) {
+        const decoder = new TextDecoder((flags & 0x0800) ? "utf-8" : "utf-8");
+        return decoder.decode(bytes);
+      }
+
+      async function inflateRaw(bytes) {
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+        return new Uint8Array(await new Response(stream).arrayBuffer());
+      }
+
+      function showStatus(title, detail = "", variant = "") {
+        els.viewer.className = "viewer";
+        clearViewer();
+        const status = document.createElement("div");
+        status.className = `status ${variant}`.trim();
+        if (!variant) {
+          const spinner = document.createElement("div");
+          spinner.className = "spinner";
+          status.appendChild(spinner);
+        }
+        const strong = document.createElement("strong");
+        strong.textContent = title;
+        status.appendChild(strong);
+        if (detail) {
+          const span = document.createElement("span");
+          span.textContent = detail;
+          status.appendChild(span);
+        }
+        els.viewer.appendChild(status);
+      }
+
+      async function copyDirectLink() {
+        if (!state.fileUrl) return;
+        try {
+          await navigator.clipboard.writeText(state.fileUrl);
+          els.copyBtn.textContent = "已复制";
+          window.setTimeout(() => {
+            els.copyBtn.textContent = "复制直链";
+          }, 1400);
+        } catch {
+          window.prompt("复制直链", state.fileUrl);
+        }
+      }
+
+      function downloadFile() {
+        if (!state.fileUrl) return;
+        const link = document.createElement("a");
+        link.href = state.fileUrl;
+        link.download = state.fileName || "download";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+    })();
   </script>
 </body>
 </html>

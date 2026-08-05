@@ -191,6 +191,24 @@ class FileRepository {
     };
   }
 
+  findByShareSlug(slugValue) {
+    const slug = String(slugValue || '').trim().toLowerCase();
+    if (!slug) return null;
+
+    const rows = all(this.db, 'SELECT * FROM files ORDER BY created_at DESC');
+    for (const row of rows) {
+      const extra = parseExtra(row.extra_json);
+      const current = String(extra.shareSlug || '').trim().toLowerCase();
+      if (current !== slug) continue;
+      return {
+        ...row,
+        metadata: toMetadata(row),
+      };
+    }
+
+    return null;
+  }
+
   updateMetadata(id, patch = {}) {
     const current = this.getById(id);
     if (!current) return null;
@@ -246,26 +264,72 @@ class FileRepository {
     return { deleted: Number(result.changes || 0) };
   }
 
-  moveFiles(ids = [], targetFolderPath = '') {
-    const normalizedIds = Array.from(
-      new Set((Array.isArray(ids) ? ids : []).map((id) => String(id || '').trim()).filter(Boolean))
+  normalizeFileIdentifiers(ids = []) {
+    return Array.from(
+      new Set(
+        (Array.isArray(ids) ? ids : [])
+          .map((id) => {
+            const raw = String(id || '').trim();
+            if (!raw) return '';
+            try {
+              return decodeURIComponent(raw);
+            } catch {
+              return raw;
+            }
+          })
+          .map((id) => id.replace(/^https?:\/\/[^/]+\/file\//i, '').replace(/^\/?file\//i, '').trim())
+          .filter(Boolean)
+      )
     );
-    if (normalizedIds.length === 0) {
+  }
+
+  resolveMoveFileIds(ids = []) {
+    const identifiers = this.normalizeFileIdentifiers(ids);
+    if (identifiers.length === 0) return { requested: 0, ids: [], notFound: [] };
+
+    const resolved = new Set();
+    const notFound = [];
+    const placeholders = identifiers.map(() => '?').join(', ');
+    const exactRows = all(this.db, `SELECT id FROM files WHERE id IN (${placeholders})`, identifiers);
+    exactRows.forEach((row) => resolved.add(row.id));
+
+    for (const identifier of identifiers) {
+      if (resolved.has(identifier)) continue;
+      const rows = all(this.db, `SELECT id FROM files WHERE file_name = ? LIMIT 2`, [identifier]);
+      if (rows.length === 1) {
+        resolved.add(rows[0].id);
+      } else {
+        notFound.push(identifier);
+      }
+    }
+
+    return {
+      requested: identifiers.length,
+      ids: Array.from(resolved),
+      notFound,
+    };
+  }
+
+  moveFiles(ids = [], targetFolderPath = '') {
+    const resolved = this.resolveMoveFileIds(ids);
+    if (resolved.ids.length === 0) {
       return { moved: 0, targetFolderPath: normalizeFolderPath(targetFolderPath) };
     }
 
     const targetPath = normalizeFolderPath(targetFolderPath);
     if (targetPath) this.ensureFolderPath(targetPath);
 
-    const placeholders = normalizedIds.map(() => '?').join(', ');
+    const placeholders = resolved.ids.map(() => '?').join(', ');
     const result = run(
       this.db,
       `UPDATE files SET folder_path = ?, updated_at = ? WHERE id IN (${placeholders})`,
-      [targetPath, Date.now(), ...normalizedIds]
+      [targetPath, Date.now(), ...resolved.ids]
     );
 
     return {
+      requested: resolved.requested,
       moved: Number(result.changes || 0),
+      notFound: resolved.notFound,
       targetFolderPath: targetPath,
     };
   }

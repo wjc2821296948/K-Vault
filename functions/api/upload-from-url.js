@@ -16,6 +16,7 @@ import {
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const FETCH_TIMEOUT = 30000;
+const MB = 1024 * 1024;
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -27,17 +28,17 @@ export async function onRequestPost(context) {
     const folderPath = normalizeFolderPath(body?.folderPath || body?.folder || "");
 
     if (!url) {
-      return jsonResponse({ error: "URL is required" }, 400);
+      return jsonResponse({ error: "请输入 URL" }, 400);
     }
 
     let parsedUrl;
     try {
       parsedUrl = new URL(url);
       if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-        return jsonResponse({ error: "Only HTTP/HTTPS URLs are supported" }, 400);
+        return jsonResponse({ error: "仅支持 HTTP/HTTPS URL" }, 400);
       }
     } catch {
-      return jsonResponse({ error: "Invalid URL" }, 400);
+      return jsonResponse({ error: "URL 格式无效" }, 400);
     }
 
     const fetched = await fetchRemote(url);
@@ -52,9 +53,14 @@ export async function onRequestPost(context) {
     }
     if (fileSize > MAX_FILE_SIZE) {
       return jsonResponse(
-        { error: `File too large (${formatSize(fileSize)}). Max allowed is ${formatSize(MAX_FILE_SIZE)}.` },
+        { error: `文件过大（${formatSize(fileSize)}），最大允许 ${formatSize(MAX_FILE_SIZE)}。` },
         413
       );
+    }
+
+    const storageValidation = validateStorageSize(storageMode, fileSize);
+    if (!storageValidation.ok) {
+      return jsonResponse({ error: storageValidation.message }, storageValidation.status);
     }
 
     const contentType = fetched.contentType || "application/octet-stream";
@@ -63,42 +69,42 @@ export async function onRequestPost(context) {
 
     if (storageMode === "r2") {
       if (!env.R2_BUCKET) {
-        return jsonResponse({ error: "R2 is not configured" }, 400);
+        return jsonResponse({ error: "R2 未配置" }, 400);
       }
       return await uploadToR2(arrayBuffer, fileName, fileExtension, contentType, fileSize, env, folderPath);
     }
 
     if (storageMode === "s3") {
       if (!env.S3_ENDPOINT || !env.S3_ACCESS_KEY_ID) {
-        return jsonResponse({ error: "S3 is not configured" }, 400);
+        return jsonResponse({ error: "S3 未配置" }, 400);
       }
       return await uploadToS3(arrayBuffer, fileName, fileExtension, contentType, fileSize, env, folderPath);
     }
 
     if (storageMode === "discord") {
       if (!env.DISCORD_WEBHOOK_URL && !env.DISCORD_BOT_TOKEN) {
-        return jsonResponse({ error: "Discord is not configured" }, 400);
+        return jsonResponse({ error: "Discord 未配置" }, 400);
       }
       return await uploadToDiscordStorage(arrayBuffer, fileName, fileExtension, contentType, fileSize, env, folderPath);
     }
 
     if (storageMode === "huggingface") {
       if (!hasHuggingFaceConfig(env)) {
-        return jsonResponse({ error: "HuggingFace is not configured" }, 400);
+        return jsonResponse({ error: "HuggingFace 未配置" }, 400);
       }
       return await uploadToHFStorage(arrayBuffer, fileName, fileExtension, contentType, fileSize, env, folderPath);
     }
 
     if (storageMode === "webdav") {
       if (!hasWebDAVConfig(env)) {
-        return jsonResponse({ error: "WebDAV is not configured" }, 400);
+        return jsonResponse({ error: "WebDAV 未配置" }, 400);
       }
       return await uploadToWebDAVStorage(arrayBuffer, fileName, fileExtension, contentType, fileSize, env, folderPath);
     }
 
     if (storageMode === "github") {
       if (!hasGitHubConfig(env)) {
-        return jsonResponse({ error: "GitHub is not configured" }, 400);
+        return jsonResponse({ error: "GitHub 未配置" }, 400);
       }
       return await uploadToGitHubStorage(arrayBuffer, fileName, fileExtension, contentType, fileSize, env, folderPath);
     }
@@ -106,7 +112,7 @@ export async function onRequestPost(context) {
     return await uploadToTelegram(arrayBuffer, fileName, fileExtension, contentType, fileSize, env, new URL(request.url).origin, folderPath);
   } catch (error) {
     console.error("URL upload error:", error);
-    return jsonResponse({ error: `Server error: ${error.message}` }, 500);
+    return jsonResponse({ error: `服务器错误：${error.message}` }, 500);
   }
 }
 
@@ -127,7 +133,7 @@ async function fetchRemote(url) {
       return {
         ok: false,
         status: 502,
-        error: `Remote URL error: ${response.status} ${response.statusText}`,
+        error: `远程 URL 响应异常：${response.status} ${response.statusText}`,
       };
     }
 
@@ -144,14 +150,14 @@ async function fetchRemote(url) {
       return {
         ok: false,
         status: 408,
-        error: "Remote URL request timed out",
+        error: "远程 URL 请求超时",
       };
     }
 
     return {
       ok: false,
       status: 502,
-      error: `Cannot fetch remote URL: ${error.message}`,
+      error: `无法获取远程 URL：${error.message}`,
     };
   } finally {
     clearTimeout(timeout);
@@ -163,6 +169,31 @@ function jsonResponse(data, status = 200) {
     status,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+function validateStorageSize(storageMode, fileSize) {
+  const limits = {
+    telegram: {
+      maxBytes: 20 * MB,
+      status: 413,
+      message: "Cloudflare Pages 上的 Telegram URL 上传限制为 20MB。较大的文件请使用 R2、S3、WebDAV 或 GitHub。",
+    },
+    discord: {
+      maxBytes: 25 * MB,
+      status: 413,
+      message: "Discord 上传上限受服务器加成影响，K-Vault 默认按 25MB 保守处理。",
+    },
+    huggingface: {
+      maxBytes: 35 * MB,
+      status: 413,
+      message: "HuggingFace regular upload is capped at 35MB in K-Vault. Use another storage backend for larger files.",
+    },
+  };
+  const limit = limits[storageMode];
+  if (limit && fileSize > limit.maxBytes) {
+    return { ok: false, status: limit.status, message: limit.message };
+  }
+  return { ok: true };
 }
 
 function normalizeFolderPath(value) {
@@ -283,7 +314,7 @@ async function uploadToTelegram(arrayBuffer, fileName, fileExtension, contentTyp
   const responseData = await response.json();
 
   if (!response.ok) {
-    if (apiEndpoint === "sendPhoto" || apiEndpoint === "sendAudio") {
+    if (apiEndpoint === "sendAudio") {
       const docFormData = new FormData();
       docFormData.append("chat_id", env.TG_Chat_ID);
       docFormData.append("document", file);
@@ -309,7 +340,7 @@ async function processTelegramSuccess(responseData, fileName, fileExtension, mim
   const messageId = responseData?.result?.message_id;
 
   if (!fileId) {
-    return jsonResponse({ error: "Failed to get Telegram file ID" }, 500);
+    return jsonResponse({ error: "Telegram 已接收文件，但未返回可用的文件 ID" }, 500);
   }
 
   const directId = await buildTelegramDirectId(fileId, fileExtension, fileName, mimeType, fileSize, messageId, env);

@@ -990,8 +990,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/element-ui@2.15.3/lib/index.js"></script>
   <script>
-    // 统一媒体预览服务基础 URL
-    const PREVIEW_SERVICE_BASE = 'https://www.katelya.eu.org';
+    const LOCAL_PREVIEW_PAGE = '/preview.html';
 
     new Vue({
       el: '#app',
@@ -1242,16 +1241,19 @@
             return;
           }
           
-          // 视频/音频/文档类型 - 使用 Blog Preview iframe
-          const videoExts = ['mp4', 'webm', 'mkv', 'avi', 'mov', 'm3u8'];
-          const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'm4a'];
-          const docExts = ['pdf', 'txt', 'doc', 'docx'];
+          // 视频/音频/文档类型 - 使用本项目的 local preview iframe
+          const videoExts = ['mp4', 'webm', 'ogg', 'ogv', 'mov', 'm4v'];
+          const audioExts = ['mp3', 'wav', 'ogg', 'oga', 'flac', 'aac', 'm4a', 'opus'];
+          const docExts = ['pdf', 'txt', 'md', 'json', 'xml', 'csv', 'docx', 'xlsx', 'pptx'];
           
           if (videoExts.includes(ext) || audioExts.includes(ext) || docExts.includes(ext)) {
-            // 构造 iframe URL - 必须对参数进行 encodeURIComponent 编码
-            const targetUrl = encodeURIComponent(fileUrl);
-            const targetTitle = encodeURIComponent(fileName);
-            const iframeSrc = `${PREVIEW_SERVICE_BASE}/preview?url=${targetUrl}&title=${targetTitle}&autoplay=1`;
+            const previewParams = new URLSearchParams({
+              url: fileUrl,
+              title: fileName,
+              autoplay: '1',
+              embed: '1'
+            });
+            const iframeSrc = `${LOCAL_PREVIEW_PAGE}?${previewParams.toString()}`;
             
             this.previewData = {
               type: 'iframe',

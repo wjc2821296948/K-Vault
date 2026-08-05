@@ -80,6 +80,37 @@ CREATE TABLE IF NOT EXISTS chunk_uploads (
 
 CREATE INDEX IF NOT EXISTS idx_chunk_uploads_expires_at ON chunk_uploads(expires_at);
 
+CREATE TABLE IF NOT EXISTS api_tokens (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  scopes_json TEXT NOT NULL DEFAULT '[]',
+  expires_at INTEGER,
+  created_at INTEGER NOT NULL,
+  last_used_at INTEGER,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  token_salt TEXT NOT NULL,
+  token_hash TEXT NOT NULL,
+  token_suffix TEXT NOT NULL,
+  token_preview TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_tokens_created_at ON api_tokens(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_api_tokens_expires_at ON api_tokens(expires_at);
+
+CREATE TABLE IF NOT EXISTS pastes (
+  id TEXT PRIMARY KEY,
+  content TEXT NOT NULL,
+  language TEXT NOT NULL DEFAULT 'text',
+  password_salt TEXT,
+  password_hash TEXT,
+  size INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_pastes_created_at ON pastes(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pastes_expires_at ON pastes(expires_at);
+
 CREATE TABLE IF NOT EXISTS app_settings (
   key TEXT PRIMARY KEY,
   value_json TEXT NOT NULL,

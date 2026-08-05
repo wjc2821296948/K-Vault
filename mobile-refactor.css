@@ -856,3 +856,341 @@ html[data-theme="dark"] {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Admin header resilience: prevents tablet header squeeze and restores dark contrast. */
+.header-content {
+  box-sizing: border-box;
+  min-width: 0;
+  gap: 10px;
+}
+
+.home-btn,
+.title,
+.stats {
+  flex: 0 0 auto;
+}
+
+.title {
+  min-width: max-content;
+  max-width: 100%;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.search-card {
+  flex: 1 1 220px;
+  min-width: 160px;
+  max-width: 360px;
+  margin-left: 12px !important;
+  margin-right: 10px !important;
+}
+
+.search-card .el-input__inner,
+.search-card .el-input__inner:focus {
+  width: 100% !important;
+}
+
+.stats,
+.stats-text,
+.stats-loaded {
+  white-space: nowrap;
+}
+
+.stats {
+  min-width: max-content;
+  line-height: 1.2;
+}
+
+.header-content .actions {
+  min-width: 0;
+  gap: 8px;
+}
+
+.header-content .actions > .el-dropdown {
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.header-content .actions > i,
+.header-content .actions > .el-dropdown > .el-dropdown-link,
+.header-content .actions > .theme-admin-toggle {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  color: var(--admin-ink, #142033) !important;
+}
+
+.header-content .actions > i,
+.header-content .actions > .el-dropdown > .el-dropdown-link i,
+.header-content .actions > .theme-admin-toggle i {
+  margin: 0 !important;
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+.status-panel {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  min-width: max-content;
+}
+
+.status-item span {
+  color: var(--admin-muted, #627083);
+  opacity: 1;
+}
+
+.el-image__error,
+.el-image__placeholder {
+  background: rgba(248, 250, 252, 0.86) !important;
+  color: #475569 !important;
+  font-weight: 600;
+}
+
+html[data-theme="dark"] .header-content .actions > i,
+html[data-theme="dark"] .header-content .actions > .el-dropdown > .el-dropdown-link,
+html[data-theme="dark"] .header-content .actions > .theme-admin-toggle {
+  background: rgba(31, 44, 72, 0.96) !important;
+  border-color: rgba(153, 177, 230, 0.48) !important;
+  color: #eef5ff !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28) !important;
+}
+
+html[data-theme="dark"] .header-content .actions > i:hover,
+html[data-theme="dark"] .header-content .actions > .el-dropdown > .el-dropdown-link:hover,
+html[data-theme="dark"] .header-content .actions > .theme-admin-toggle:hover {
+  background: rgba(55, 70, 112, 0.98) !important;
+  border-color: rgba(190, 205, 255, 0.64) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .status-panel {
+  background: rgba(21, 31, 52, 0.96) !important;
+  border-color: rgba(153, 177, 230, 0.38) !important;
+}
+
+html[data-theme="dark"] .status-item span {
+  color: #d7e2f7 !important;
+}
+
+html[data-theme="dark"] .el-dropdown-menu,
+html[data-theme="dark"] .el-select-dropdown,
+html[data-theme="dark"] .el-popover {
+  background: rgba(15, 23, 39, 0.98) !important;
+  border-color: rgba(153, 177, 230, 0.32) !important;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.38) !important;
+}
+
+html[data-theme="dark"] .el-dropdown-menu__item,
+html[data-theme="dark"] .el-select-dropdown__item,
+html[data-theme="dark"] .el-popover {
+  color: #e8eeff !important;
+}
+
+html[data-theme="dark"] .el-dropdown-menu__item:not(.is-disabled):hover,
+html[data-theme="dark"] .el-dropdown-menu__item--selected,
+html[data-theme="dark"] .el-select-dropdown__item.hover,
+html[data-theme="dark"] .el-select-dropdown__item:hover {
+  background: rgba(111, 132, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .el-image__error,
+html[data-theme="dark"] .el-image__placeholder {
+  background: rgba(15, 23, 39, 0.9) !important;
+  color: #dbeafe !important;
+}
+
+@media (max-width: 1280px) and (min-width: 901px) {
+  .el-header {
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 12px 12px 0 !important;
+    overflow: visible !important;
+  }
+
+  .header-content {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    height: auto !important;
+    min-height: 64px;
+    margin: 0 !important;
+    padding: 12px 16px !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+  }
+
+  .home-btn {
+    margin-right: 4px !important;
+  }
+
+  .title {
+    font-size: clamp(1.18rem, 2.1vw, 1.55rem) !important;
+  }
+
+  .stats {
+    order: 2;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    padding: 8px 12px !important;
+  }
+
+  .search-card {
+    order: 3;
+    flex: 1 1 320px;
+    max-width: none;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .header-content .actions {
+    order: 4;
+    flex: 1 0 100%;
+    width: 100%;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .header-content .actions > .status-panel {
+    order: 90 !important;
+    flex: 1 1 360px !important;
+    min-width: 320px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 10px 12px;
+    margin: 0 0 0 4px !important;
+    padding: 9px 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .el-main.main-container,
+  .main-container {
+    margin-top: 12px !important;
+  }
+
+  .disk-layout {
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .disk-layout,
+  .disk-content,
+  .folder-sidebar {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .stats {
+    margin-left: auto !important;
+  }
+
+  .header-content .actions {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, 40px);
+    align-items: center !important;
+    justify-content: start !important;
+    gap: 8px !important;
+    width: 100%;
+  }
+
+  .header-content .actions > i,
+  .header-content .actions > .el-dropdown > .el-dropdown-link,
+  .header-content .actions > .theme-admin-toggle {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+  }
+
+  .header-content .actions > .status-panel {
+    grid-column: 1 / -1;
+    width: 100% !important;
+    min-width: 0;
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin: 2px 0 0 !important;
+    padding: 7px 8px !important;
+    border-radius: 12px !important;
+    background: rgba(15, 118, 110, 0.08) !important;
+  }
+
+  .header-content .actions > .status-panel .status-item {
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .header-content .actions > .status-panel .status-item span {
+    display: inline !important;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
+  html[data-theme="dark"] .header-content .actions > .status-panel {
+    background: rgba(31, 44, 72, 0.86) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .header-content .actions {
+    grid-template-columns: repeat(6, 40px);
+  }
+
+  .header-content .actions > .status-panel {
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  }
+
+  .header-content .actions > .status-panel .status-item span {
+    font-size: 0.64rem;
+  }
+
+  .folder-head {
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  .folder-head-title {
+    flex: 1 1 100% !important;
+    width: 100%;
+  }
+
+  .folder-head-actions {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(4, 36px);
+    justify-content: start;
+    gap: 8px !important;
+    margin-left: 0 !important;
+  }
+
+  .folder-head .el-button {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .header-content .actions {
+    grid-template-columns: repeat(5, 40px);
+  }
+
+  .header-content .actions > .status-panel {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    row-gap: 8px !important;
+  }
+}

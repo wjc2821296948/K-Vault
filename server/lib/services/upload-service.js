@@ -11,7 +11,7 @@ class UploadService {
   resolveStorage({ storageId, storageMode }) {
     const storageConfig = this.storageRepo.resolveStorageSelection({ storageId, storageMode });
     if (!storageConfig) {
-      throw new Error('No available storage configuration.');
+      throw new Error('没有可用的存储配置。');
     }
     return storageConfig;
   }
@@ -81,7 +81,7 @@ class UploadService {
   }) {
     const parsedUrl = new URL(url);
     if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-      throw new Error('Only HTTP/HTTPS URL is supported.');
+      throw new Error('仅支持 HTTP/HTTPS URL。');
     }
 
     const controller = new AbortController();
@@ -101,18 +101,18 @@ class UploadService {
     }
 
     if (!response.ok) {
-      throw new Error(`Target URL responded with ${response.status}.`);
+      throw new Error(`目标 URL 响应异常：${response.status}。`);
     }
 
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
     const arrayBuffer = await response.arrayBuffer();
 
     if (arrayBuffer.byteLength === 0) {
-      throw new Error('Target URL returned empty body.');
+      throw new Error('目标 URL 返回了空文件。');
     }
 
     if (arrayBuffer.byteLength > maxBytes) {
-      throw new Error(`Remote file exceeds size limit (${Math.floor(maxBytes / 1024 / 1024)}MB).`);
+      throw new Error(`远程文件超过大小限制（${Math.floor(maxBytes / 1024 / 1024)}MB）。`);
     }
 
     let fileName = decodeURIComponent(parsedUrl.pathname.split('/').pop() || '').trim();
@@ -142,7 +142,7 @@ class UploadService {
 
     const storageConfig = this.storageRepo.getById(file.storage_config_id, true);
     if (!storageConfig) {
-      throw new Error('Storage config referenced by file not found.');
+      throw new Error('文件引用的存储配置不存在。');
     }
 
     const adapter = this.storageFactory.createAdapter(storageConfig);

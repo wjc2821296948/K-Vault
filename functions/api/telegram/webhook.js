@@ -84,6 +84,12 @@ export async function onRequestPost(context) {
 
   const directLink = buildTelegramDirectLink(env, directId, new URL(request.url).origin);
   const chatId = message?.chat?.id;
+  let reply = {
+    attempted: false,
+    ok: false,
+    skipped: true,
+    reason: chatId ? 'not-sent' : 'missing-chat-id',
+  };
 
   if (chatId) {
     const noticeResult = await sendTelegramUploadNotice(
@@ -98,6 +104,7 @@ export async function onRequestPost(context) {
       },
       env
     );
+    reply = normalizeReplyResult(noticeResult);
     if (!noticeResult?.ok && !noticeResult?.skipped) {
       console.warn(
         'Webhook reply failed:',
@@ -111,6 +118,12 @@ export async function onRequestPost(context) {
     directLink,
     storageType: 'telegram',
     mode: useSigned ? 'signed' : 'kv',
+    update: {
+      chatId,
+      messageId: message.message_id,
+      mediaKind: media.kind,
+    },
+    reply,
   });
 }
 
@@ -119,4 +132,23 @@ function jsonResponse(body, status = 200) {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+function normalizeReplyResult(result) {
+  if (!result) {
+    return {
+      attempted: true,
+      ok: false,
+      skipped: false,
+      reason: 'empty-result',
+    };
+  }
+
+  return {
+    attempted: !result.skipped,
+    ok: Boolean(result.ok),
+    skipped: Boolean(result.skipped),
+    reason: result.reason || result.error || result.data?.description || '',
+    status: result.data?.error_code || undefined,
+  };
 }

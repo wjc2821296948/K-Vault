@@ -1,4 +1,4 @@
-name: Docker Images
+name: Docker Image
 
 on:
   push:
@@ -15,20 +15,11 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
+  IMAGE_NAME: k-vault
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - image_name: k-vault-api
-            context: ./server
-            file: ./server/Dockerfile
-          - image_name: k-vault-web
-            context: .
-            file: ./frontend/Dockerfile
 
     steps:
       - name: Checkout
@@ -52,7 +43,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image_name }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -63,8 +54,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.file }}
+          context: .
+          file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}

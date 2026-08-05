@@ -2,6 +2,8 @@
 
 const { spawnSync } = require('node:child_process');
 
+const serviceName = process.env.DOCKER_SERVICE || 'k-vault';
+
 function runCommand(command, args, options = {}) {
   const result = spawnSync(command, args, {
     encoding: 'utf8',
@@ -18,11 +20,11 @@ function runCommand(command, args, options = {}) {
 }
 
 function runDockerComposeExec(script) {
-  return runCommand('docker', ['compose', 'exec', '-T', 'api', 'sh', '-lc', script]);
+  return runCommand('docker', ['compose', 'exec', '-T', serviceName, 'sh', '-lc', script]);
 }
 
 function runDockerComposeCurl(pathname) {
-  const script = `wget -qO- http://localhost:8787${pathname}`;
+  const script = `wget -qO- http://localhost:8080${pathname}`;
   return runDockerComposeExec(script);
 }
 
@@ -55,10 +57,11 @@ function checkDockerComposeReady() {
     };
   }
 
-  const hasApi = /kvault-api|\bapi\b/i.test(ps.stdout);
+  const escapedServiceName = serviceName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const hasService = new RegExp(`\\b${escapedServiceName}\\b|\\bkvault\\b`, 'i').test(ps.stdout);
   return {
-    ok: hasApi,
-    message: hasApi ? 'docker compose is running' : 'api service not found in docker compose ps',
+    ok: hasService,
+    message: hasService ? 'docker compose is running' : `${serviceName} service not found in docker compose ps`,
     detail: truncate(ps.stdout, 500),
   };
 }
@@ -68,7 +71,7 @@ function collectStatus() {
   if (response.code !== 0) {
     return {
       ok: false,
-      message: 'failed to query /api/status inside api container',
+      message: `failed to query /api/status inside ${serviceName} container`,
       detail: truncate(response.stderr || response.stdout || 'Unknown error'),
       raw: null,
     };
@@ -128,7 +131,7 @@ function collectConnectivity() {
 }
 
 function collectBootstrapProfiles() {
-  const script = "node -e \"const { createContainer }=require('./lib/container'); const c=createContainer(process.env); console.log(JSON.stringify(c.storageRepo.list(false).map(x=>({type:x.type,name:x.name,enabled:x.enabled,isDefault:x.isDefault})), null, 2));\"";
+  const script = "cd /app/server && node -e \"const { createContainer }=require('./lib/container'); const c=createContainer(process.env); console.log(JSON.stringify(c.storageRepo.list(false).map(x=>({type:x.type,name:x.name,enabled:x.enabled,isDefault:x.isDefault})), null, 2));\"";
   const response = runDockerComposeExec(script);
   if (response.code !== 0) {
     return {
@@ -165,12 +168,12 @@ function diagnose(results) {
   const ghStatus = status.github || {};
 
   if (!results.compose.ok) {
-    issues.push('Docker compose unavailable or api service missing.');
+    issues.push(`Docker compose unavailable or ${serviceName} service missing.`);
     return issues;
   }
 
   if (!results.status.ok) {
-    issues.push('Cannot read /api/status from api container.');
+    issues.push(`Cannot read /api/status from ${serviceName} container.`);
     return issues;
   }
 
@@ -272,7 +275,7 @@ function main() {
     'next-actions',
     [
       '1) Confirm .env includes token+repo pairs for both providers (or alias vars).',
-      '2) Rebuild and restart: docker compose down ; docker compose up -d --build',
+      '2) Pull/restart: docker compose pull ; docker compose up -d',
       '3) Re-run: npm run docker:doctor',
       '4) If still failing with configured=true, verify token scopes and repository visibility.',
     ].join('\n')

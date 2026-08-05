@@ -35,7 +35,7 @@
 - **Unlimited Storage** - Upload unlimited images and files
 - **Completely Free** - Hosted on Cloudflare, zero cost within the free quota
 - **Free Domain** - Uses `*.pages.dev` subdomain, and also supports custom domains
-- **Multiple Storage Backends** - Supports Telegram, Cloudflare R2, S3-compatible storage, Discord, and HuggingFace
+- **Multiple Storage Backends** - Supports Telegram, Cloudflare R2, S3-compatible storage, Discord, HuggingFace, WebDAV, and GitHub
 - **Telegram Webhook Backlink** - Bot can automatically reply with direct links after receiving files in channels/groups
 - **KV Write Optimization** - Telegram can use signed direct links to significantly reduce KV read/write usage
 - **Content Moderation** - Optional image moderation API to automatically block inappropriate content
@@ -49,7 +49,7 @@
 - **Dynamic Storage Config Management** - Add/Edit/Delete/Test storage configs and switch default storage via admin API
 - **Pluggable Settings Store (Docker)** - Basic app settings can use `sqlite` (default) or Redis protocol backends (Upstash / Redis / KVrocks)
 - **Simplified Frontend** - Root pages remain the primary UX for upload/admin deployment.
-- **GitHub Actions Docker Build** - Auto-build/push `api` + `web` images on main/tag push
+- **GitHub Actions Docker Build** - Auto-build/push the single `ghcr.io/katelya77/k-vault` image on main/tag push
 
 ### 2026-03 Product Update
 
@@ -61,12 +61,13 @@
 - Storage capability cards now keep all adapters visible (configured or not) with explicit status/hints.
 - Existing direct links (`/file/:id`) remain compatible.
 
-### Cloudflare Pages (No Dashboard Build Setting Changes)
+### Cloudflare Pages (No Build Step)
 
 A lightweight workflow note is included in `.github/workflows/pages-deploy.yml`.
 
 - No Cloudflare API secrets are required in this repository by default.
 - Recommended deployment path is Cloudflare Pages Git integration (connect your fork directly in Cloudflare Dashboard).
+- Leave Build command and Build output directory empty. K-Vault serves the root static pages plus `functions/`; `frontend/dist` is not part of the current Pages deployment.
 - If you want CLI deployment, run Wrangler locally with your own credentials.
 
 Recommended architecture for multi-cloud mounts:
@@ -77,84 +78,144 @@ Recommended architecture for multi-cloud mounts:
 
 ---
 
-## Quick Deployment
+## Deployment
 
-### Prerequisites
+K-Vault has two official deployment modes:
 
-- Cloudflare account
-- Telegram account (if using Telegram storage)
-- Docker + Docker Compose (optional, for self-host deployment)
+1. **Cloudflare Pages**: static root pages plus Pages Functions. This is best for Cloudflare KV/R2, edge functions, and free-tier deployments.
+2. **Docker**: one image, `ghcr.io/katelya77/k-vault:latest`, for VPS/NAS/private self-hosting and long-running multi-storage deployments.
 
-### Step 1: Get Telegram Credentials
+Both modes expose the same main entrypoints:
 
-1. **Get Bot Token**
-   - Send `/newbot` to [@BotFather](https://t.me/BotFather)
-   - Follow the prompts to create a bot and get `BOT_TOKEN`
+- Upload UI: `/`
+- Admin console: `/admin.html`
+- WebDAV page: `/webdav.html`
+- Admin/API routes: `/api/*`
+- Browser upload: `POST /upload`
+- API Token upload: `/api/v1/upload`
+- Direct/share links: `/file/*`, `/share/*`, `/s/*`
 
-2. **Create a Channel and Add the Bot**
-   - Create a new Telegram channel
-   - Add the bot as a channel administrator
+The Docker image runs Nginx and the Node API inside one container. From the user's perspective, the UI, admin console, WebDAV page, API Token upload, direct links, short links, and storage profile management should match the Cloudflare Pages deployment.
 
-3. **Get Chat ID**
-   - Send a message to [@VersaToolsBot](https://t.me/VersaToolsBot) or [@GetTheirIDBot](https://t.me/GetTheirIDBot) to get the channel ID
+### Option 1: Cloudflare Pages
 
-### Step 2: Deploy to Cloudflare
+Use this when you want Cloudflare-hosted static pages, Pages Functions, KV, and R2.
 
 1. **Fork this repository**
 
 2. **Create a Pages project**
    - Log in to [Cloudflare Dashboard](https://dash.cloudflare.com)
-   - Go to `Workers and Pages` 鈫?`Create Application` 鈫?`Pages` 鈫?`Connect to Git`
-   - Select the forked repository and deploy
+   - Go to `Workers and Pages` -> `Create Application` -> `Pages` -> `Connect to Git`
+   - Select the forked repository
+   - Use these build settings:
 
-3. **Configure environment variables**
-   - Go to project `Settings` 鈫?`Environment variables`
-   - Add required variables:
+| Item | Value |
+| :--- | :--- |
+| Framework preset | `None` |
+| Root directory | Empty (repository root) |
+| Install command | Empty |
+| Build command | Empty |
+| Build output directory | Empty |
+| Deploy command | Empty |
+
+3. **Bind KV**
+   - Open Cloudflare Dashboard -> `Workers and Pages` -> `KV`
+   - Create a namespace, for example `k-vault`
+   - Open the Pages project -> `Settings` -> `Functions` -> `KV namespace bindings`
+   - The binding variable name must be `img_url`
+
+4. **Configure at least one storage backend**
+   - Go to project `Settings` -> `Environment variables`
+   - Telegram example:
 
 | Variable | Description | Required |
 | :--- | :--- | :---: |
-| `TG_Bot_Token` | Telegram Bot Token | 鉁?|
-| `TG_Chat_ID` | Telegram channel ID | 鉁?|
-| `TG_BOT_TOKEN` | Telegram Bot Token (Docker/self-host naming) | Optional |
-| `TG_CHAT_ID` | Telegram channel ID (Docker/self-host naming) | Optional |
+| `TG_Bot_Token` | Telegram Bot Token | Yes |
+| `TG_Chat_ID` | Telegram channel ID | Yes |
 | `BASIC_USER` | Admin username | Optional |
 | `BASIC_PASS` | Admin password | Optional |
 
-**Redeploy** - Changes to environment variables require redeployment to take effect
+You can also use R2, S3-compatible storage, Discord, HuggingFace, WebDAV, or GitHub. See the Storage Configuration section below for backend-specific variables.
 
-### Step 3: Docker Self-host Deployment (Optional)
+5. **Redeploy**
+   - Environment variable or binding changes require a new deployment.
+   - Visit `/api/status` and confirm the expected storage and KV/R2 status.
 
-If you want to run K-Vault on your own VPS/NAS without Cloudflare Pages runtime:
+Common Pages mistakes:
 
-1. Copy environment template:
+- Do not set Deploy command to `npx wrangler deploy`; that is a Workers command, not a Pages command.
+- Do not set Build command to `npm run build`.
+- Do not set Build output directory to `dist` or `frontend/dist`.
+- If R2 binding deployment fails with `invalid jurisdiction`, follow [Cloudflare Pages R2 binding troubleshooting](docs/cloudflare-pages-r2.md).
+
+### Option 2: Docker
+
+Use this for VPS, NAS, private network, or self-hosted multi-storage deployments. Docker does not depend on the Cloudflare Pages runtime.
+
+#### Simplest Docker Run
+
+No repository checkout and no local Node/npm installation are required:
+
+```bash
+docker volume create kvault_data
+docker run -d \
+  --name kvault \
+  --restart unless-stopped \
+  -p 8080:8080 \
+  -v kvault_data:/app/data \
+  ghcr.io/katelya77/k-vault:latest
+```
+
+Open:
+
+- Upload UI: `http://<host>:8080/`
+- Admin: `http://<host>:8080/admin.html`
+- WebDAV page: `http://<host>:8080/webdav.html`
+- Health check: `http://<host>:8080/api/health`
+
+On first start, if `CONFIG_ENCRYPTION_KEY` and `SESSION_SECRET` are not provided, the container generates persistent values in `/app/data/runtime.env`. Recreating the container keeps them as long as the Docker volume is kept.
+
+For public deployments, set admin credentials explicitly:
+
+```bash
+docker run -d \
+  --name kvault \
+  --restart unless-stopped \
+  -p 8080:8080 \
+  -v kvault_data:/app/data \
+  -e BASIC_USER=admin \
+  -e BASIC_PASS='replace-with-a-strong-password' \
+  ghcr.io/katelya77/k-vault:latest
+```
+
+#### Recommended Docker Compose
+
+If you cloned the repository:
+
+```bash
+docker compose up -d
+```
+
+The Compose file pulls `ghcr.io/katelya77/k-vault:latest` by default. `.env` is optional. Create it only when you want fixed credentials, domain, upload limits, or environment-bootstrapped storage:
 
 ```bash
 cp .env.example .env
+docker compose up -d
 ```
 
-2. Fill at least these keys in `.env`:
-   - `CONFIG_ENCRYPTION_KEY`
-   - `SESSION_SECRET`
-   - one bootstrap storage config (for example `TG_BOT_TOKEN` + `TG_CHAT_ID`)
-   - optional settings store:
-     - default: `SETTINGS_STORE=sqlite`
-     - Redis mode: `SETTINGS_STORE=redis` and `SETTINGS_REDIS_URL`
+Common Docker variables:
 
-3. Start services:
+| Variable | Description |
+| :--- | :--- |
+| `BASIC_USER` / `BASIC_PASS` | Admin login credentials, recommended for public deployments |
+| `PUBLIC_BASE_URL` | Public URL used for generated links and webhooks |
+| `DEFAULT_STORAGE_TYPE` | Default storage: `telegram` / `r2` / `s3` / `discord` / `huggingface` / `webdav` / `github` |
+| `TG_BOT_TOKEN` + `TG_CHAT_ID` | Telegram bootstrap storage variables for Docker |
+| `R2_*` / `S3_*` / `WEBDAV_*` / `GITHUB_*` / `HF_*` | Other storage backend configuration |
+| `UPLOAD_MAX_SIZE` / `CHUNK_SIZE` | Upload limits and chunk size |
+| `WEB_PORT` | Public Compose port, default `8080` |
 
-```bash
-docker compose up -d --build
-```
-
-Optional local Redis profile (for settings store):
-
-```bash
-docker compose --profile redis up -d --build
-```
-
-4. Access:
-   - Legacy UI: `http://<host>:8080/`
-   - WebDAV page: `http://<host>:8080/webdav.html`
+You can also start Docker first and add/test/switch storage profiles later in the admin console. The WebDAV page, API Tokens, API v1 uploads, direct links, and short links all use the same `8080` entrypoint.
 
 For full Docker guide, see [README-DOCKER.md](README-DOCKER.md).
 
@@ -175,7 +236,7 @@ node scripts/storage-regression.js
 Validation criteria:
 
 - `webdav.connected` in `/api/status` must be `true`
-- `/api/storage/:id/test` must return `connected=true`
+- Docker/self-hosted deployments can additionally verify `/api/storage/:id/test` returns `connected=true`
 - WebDAV `upload / download / delete` in the regression script must all pass
 
 For Docker deployment, simply change `BASE_URL` to your self-hosted address, for example `http://localhost:8080`.
@@ -245,9 +306,9 @@ After enabling this, Telegram files still write a lightweight KV index by defaul
 
 To enable image management, configure KV:
 
-1. Go to Cloudflare Dashboard 鈫?`Workers and Pages` 鈫?`KV`
+1. Go to Cloudflare Dashboard -> `Workers and Pages` -> `KV`
 2. Click `Create namespace`, name it `k-vault`
-3. Go to your Pages project 鈫?`Settings` 鈫?`Functions` 鈫?`KV namespace bindings`
+3. Go to your Pages project -> `Settings` -> `Functions` -> `KV namespace bindings`
 4. Add binding: variable name `img_url`, choose the namespace you created
 5. Redeploy the project
 
@@ -256,16 +317,18 @@ To enable image management, configure KV:
 Configure R2 to support uploads up to 100MB:
 
 1. **Create a bucket**
-   - Cloudflare Dashboard 鈫?`R2 Object Storage` 鈫?`Create bucket`
+   - Cloudflare Dashboard -> `R2 Object Storage` -> `Create bucket`
    - Name it `k-vault-files`
 
 2. **Bind to the project**
-   - Pages project 鈫?`Settings` 鈫?`Functions` 鈫?`R2 bucket bindings`
+   - Pages project -> `Settings` -> `Functions` -> `R2 bucket bindings`
    - Variable name `R2_BUCKET`, choose your bucket
 
 3. **Enable R2**
-   - `Settings` 鈫?`Environment variables` 鈫?add `USE_R2` = `true`
+   - `Settings` -> `Environment variables` -> add `USE_R2` = `true`
    - Redeploy
+
+> If redeploy fails with `binding R2_BUCKET of type r2_bucket contains an invalid jurisdiction`, Cloudflare Pages is rejecting the R2 binding metadata before K-Vault code runs. Normal R2 buckets should not set `jurisdiction`; only residency-restricted buckets use `eu` or `fedramp`. Follow [Cloudflare Pages R2 binding troubleshooting](docs/cloudflare-pages-r2.md) to rebuild Production/Preview bindings, or run `npm run pages:r2:doctor -- --check` to validate `wrangler.jsonc`.
 
 ### S3-Compatible Storage (Optional)
 
@@ -314,7 +377,7 @@ Store files through a Discord channel, supporting both Webhook and Bot modes.
 
 **Webhook deployment (recommended):**
 
-1. In your Discord server, go to channel settings 鈫?Integrations 鈫?Webhooks
+1. In your Discord server, go to channel settings -> Integrations -> Webhooks
 2. Create a new Webhook and copy the Webhook URL
 3. Add environment variable `DISCORD_WEBHOOK_URL` in Cloudflare Pages
 4. (Recommended) Also create a Discord Bot and set `DISCORD_BOT_TOKEN` for file retrieval and deletion
@@ -324,7 +387,7 @@ Store files through a Discord channel, supporting both Webhook and Bot modes.
 
 1. Go to [Discord Developer Portal](https://discord.com/developers/applications) and create an application
 2. Create a Bot in the Bot tab and get the token
-3. In OAuth2 鈫?URL Generator, select `bot` scope and grant `Administrator` permission to the Bot
+3. In OAuth2 -> URL Generator, select `bot` scope and grant `Administrator` permission to the Bot
 4. Use the generated URL to invite the Bot to your server
 5. Add `DISCORD_BOT_TOKEN` and `DISCORD_CHANNEL_ID` in Cloudflare Pages
 6. Redeploy
@@ -355,8 +418,8 @@ Use HuggingFace Datasets API to store files. Files are saved to a Dataset reposi
 **Deployment steps:**
 
 1. Register a [HuggingFace](https://huggingface.co) account
-2. Create a new Dataset repository (Settings 鈫?New Dataset)
-3. Go to [Settings 鈫?Access Tokens](https://huggingface.co/settings/tokens) and create a token (requires Write permission)
+2. Create a new Dataset repository (Settings -> New Dataset)
+3. Go to [Settings -> Access Tokens](https://huggingface.co/settings/tokens) and create a token (requires Write permission)
 4. Add `HF_TOKEN` and `HF_REPO` environment variables in Cloudflare Pages
 5. Redeploy
 
@@ -476,8 +539,8 @@ Allows non-logged-in users to upload files. Site owners can configure whether it
 
 | Variable | Description | Required |
 | :--- | :--- | :---: |
-| `TG_Bot_Token` | Telegram Bot Token | 鉁?|
-| `TG_Chat_ID` | Telegram channel ID | 鉁?|
+| `TG_Bot_Token` | Telegram Bot Token | Required when Telegram is the selected Pages storage |
+| `TG_Chat_ID` | Telegram channel ID | Required when Telegram is the selected Pages storage |
 | `CUSTOM_BOT_API_URL` | Self-hosted Telegram Bot API URL | Optional |
 | `PUBLIC_BASE_URL` | Webhook backlink domain | Optional |
 | `TG_WEBHOOK_SECRET` | Telegram Webhook secret | Optional |
@@ -508,12 +571,12 @@ Allows non-logged-in users to upload files. Site owners can configure whether it
 | `ModerateContentApiKey` | Image moderation API key | Optional |
 | `WhiteList_Mode` | Whitelist mode | Optional |
 | `disable_telemetry` | Disable telemetry | Optional |
-| `PORT` | API port in Docker self-host mode | Optional |
+| `PORT` | Internal API port for the single Docker image, keep `8787` | Optional |
 | `DATA_DIR` | Data directory in Docker self-host mode | Optional |
 | `DB_PATH` | SQLite database path in Docker self-host mode | Optional |
 | `CHUNK_DIR` | Chunk temp directory in Docker self-host mode | Optional |
-| `CONFIG_ENCRYPTION_KEY` | Encryption key for storage config secrets (required in Docker mode) | Optional |
-| `SESSION_SECRET` | Session/signing secret in Docker self-host mode | Optional |
+| `CONFIG_ENCRYPTION_KEY` | Docker storage-config encryption key; generated and persisted if omitted | Optional |
+| `SESSION_SECRET` | Docker session/signing secret; generated and persisted if omitted | Optional |
 | `UPLOAD_MAX_SIZE` | Max upload size (bytes) in Docker self-host mode | Optional |
 | `UPLOAD_SMALL_FILE_THRESHOLD` | Direct-upload threshold (bytes) in Docker self-host mode | Optional |
 | `CHUNK_SIZE` | Chunk size (bytes) in Docker self-host mode | Optional |

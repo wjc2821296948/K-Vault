@@ -41,7 +41,7 @@
 - **内容审核** - 可选的图片审核 API，自动屏蔽不良内容
 - **多格式支持** - 图片、视频、音频、文档、压缩包等
 - **在线预览** - 支持图片、视频、音频、文档（pdf、docx、txt）格式的预览
-- **分片上传** - 支持最大 100MB 文件（配合 R2/S3）
+- **分片上传** - 支持最大 100MB 文件（建议配合 R2/S3/WebDAV/GitHub，Telegram 网页上传按平台限制处理）
 - **访客上传** - 可选的访客上传功能，支持文件大小和每日次数限制
 - **API Token 认证** - 支持 `curl` / ShareX / 脚本等程序化上传与调用
 - **多种视图** - 网格、列表、瀑布流多种管理界面
@@ -50,44 +50,63 @@
 - **动态存储配置管理** - 支持在管理端通过 API 对存储配置进行新增/编辑/删除/测试/设为默认
 - **可插拔设置存储（Docker）** - 基础站点设置可使用 `sqlite`（默认）或 Redis 协议后端（Upstash / Redis / KVrocks）
 - **前端路径简化** - 以根路径页面为主流程（`/`、`/admin.html`、`/webdav.html`）
-- **GitHub Actions 镜像构建** - 主分支/Tag 自动构建并推送 `api` + `web` 镜像
+- **GitHub Actions 镜像构建** - 主分支/Tag 自动构建并推送单镜像 `ghcr.io/katelya77/k-vault`
 
 
 ---
 
-## 快速部署
+## 部署方式
 
-### 前置要求
+K-Vault 只保留两类正式部署方式：
 
-- Cloudflare 账户
-- Telegram 账户（如使用 Telegram 存储）
-- Docker + Docker Compose（可选，用于自托管部署）
+1. **Cloudflare Pages 部署**：使用 Cloudflare Pages 静态页面 + Pages Functions，适合免费额度、边缘函数、Cloudflare KV/R2 场景。
+2. **Docker 部署**：使用单镜像 `ghcr.io/katelya77/k-vault:latest`，适合 VPS/NAS/内网部署，也适合 WebDAV、S3、GitHub、HuggingFace 等多存储后端长期自托管。
 
-### 第一步：获取 Telegram 凭据
+两种部署方式使用同一套根目录页面和同一组主入口：
 
-1. **获取 Bot Token**
-   - 向 [@BotFather](https://t.me/BotFather) 发送 `/newbot`
-   - 按提示创建机器人，获得 `BOT_TOKEN`
+- 上传首页：`/`
+- 管理后台：`/admin.html`
+- WebDAV 页面：`/webdav.html`
+- 管理/API 接口：`/api/*`
+- 普通上传：`POST /upload`
+- API Token 上传：`/api/v1/upload`
+- 文件直链/分享：`/file/*`、`/share/*`、`/s/*`
 
-2. **创建频道并添加机器人**
-   - 创建一个新的 Telegram 频道
-   - 将机器人添加为频道管理员
+Docker 版本由 Nginx 在容器内代理到 Node API，对外仍是一个端口，因此用户看到的 UI、管理后台、WebDAV 页面、API Token 上传和多存储配置流程应与 Cloudflare Pages 部署保持一致。
 
-3. **获取 Chat ID**
-   - 向 [@VersaToolsBot](https://t.me/VersaToolsBot) 或 [@GetTheirIDBot](https://t.me/GetTheirIDBot) 发送消息获取频道 ID
+### 方式一：Cloudflare Pages 部署
 
-### 第二步：部署到 Cloudflare
+适合想使用 Cloudflare 免费托管、KV、R2 和 Pages Functions 的用户。
 
 1. **Fork 本仓库**
 
-2. **创建 Pages 项目**
+2. **创建 Pages 项目（推荐 Git 集成）**
    - 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
    - 进入 `Workers 和 Pages` → `创建应用程序` → `Pages` → `连接到 Git`
-   - 选择 Fork 的仓库，点击部署
+   - 选择 Fork 的仓库
+   - 构建设置按下面填写：
 
-3. **配置环境变量**
+| 项目 | 值 |
+| :--- | :--- |
+| Framework preset | `None` / 不使用预设 |
+| Root directory | 留空（仓库根目录） |
+| Install command | 留空 |
+| Build command | 留空 |
+| Build output directory | 留空 |
+| Deploy command | 留空 |
+
+> 不要在 Pages Git 集成里填写 `npx wrangler deploy`。这是 Workers 部署命令，不是 Pages 部署命令；填错会出现 `The detected framework ("Hono") cannot be automatically configured` 一类错误。
+> 本项目的 Cloudflare Pages 入口就是仓库根目录静态页面（`/`、`/admin.html`、`/webdav.html`）加 `functions/`。不要填写 `npm run build` 或 `frontend/dist`，否则会偏离当前根目录 UI 部署方式。
+
+3. **绑定 KV（图片管理、分片任务、基础配置必需）**
+   - 进入 Cloudflare Dashboard → `Workers 和 Pages` → `KV`
+   - 创建命名空间，例如 `k-vault`
+   - 回到 Pages 项目 → `设置` → `函数` → `KV 命名空间绑定`
+   - 变量名必须填 `img_url`
+
+4. **配置至少一个存储后端**
    - 进入项目 `设置` → `环境变量`
-   - 添加必需变量：
+   - 先选择一个默认存储后端。Telegram 示例：
 
 | 变量名 | 说明 | 必需 |
 | :--- | :--- | :---: |
@@ -96,43 +115,102 @@
 | `BASIC_USER` | 管理后台用户名 | 可选 |
 | `BASIC_PASS` | 管理后台密码 | 可选 |
 
-**重新部署** - 修改环境变量后需重新部署生效
+也可以使用 R2、S3、Discord、HuggingFace、WebDAV、GitHub 等后端。对应变量见下方“存储配置”章节；改完环境变量后必须重新部署。
 
-### 第三步：Docker 自托管部署（可选）
+5. **重新部署**
+   - 修改环境变量或绑定后必须重新部署，运行中的部署不会自动读取新配置。
+   - 访问 `/api/status`，确认 `telegram`、`kv`、`r2` 等状态是否符合预期。
 
-如果你希望在自己的 VPS/NAS 上运行（不依赖 Cloudflare Pages 运行时）：
+**可选：Wrangler Direct Upload**
 
-1. 复制环境变量模板：
-
-```bash
-npm run docker:init-env
-```
-
-该命令会在 `.env` 不存在时自动创建，并仅在密钥为空或占位符时生成 `CONFIG_ENCRYPTION_KEY` 与 `SESSION_SECRET`，不会每次重置已有密钥。
-
-2. 至少填写以下关键变量：
-   - `CONFIG_ENCRYPTION_KEY`
-   - `SESSION_SECRET`
-   - 一套默认存储配置（例如 `TG_BOT_TOKEN` + `TG_CHAT_ID`）
-   - 可选设置存储：
-     - 默认：`SETTINGS_STORE=sqlite`
-     - Redis 模式：`SETTINGS_STORE=redis` 且配置 `SETTINGS_REDIS_URL`
-
-3. 启动服务：
+如果你不使用 Git 集成，而是想从本地直接上传当前仓库根目录：
 
 ```bash
-npm run docker:up
+npm run pages:deploy -- --project-name <你的 Pages 项目名>
 ```
 
-如需启用本地 Redis（用于基础设置存储）：
+等价于执行 `npx wrangler pages deploy .`，直接上传仓库根目录。不要把 Direct Upload 项目和 Git 集成项目混用；Cloudflare Pages 文档也说明两种创建方式后续不能直接互相切换。
+
+**常见部署错误**
+
+- `The detected framework ("Hono") cannot be automatically configured`：把 Pages 项目误配成了 `npx wrangler deploy`。删除 Deploy command，使用上表的 Pages 构建设置。
+- 部署后出现旧版 landing 首页或进不了上传页：确认 Build command 和 Build output directory 都是留空，不要填 `npm run build` 或 `frontend/dist`。
+- 构建成功但页面 404：Build output directory 不应填写 `dist` 或 `frontend/dist`，留空即可发布仓库根目录页面。
+- R2 `invalid jurisdiction`：这是 Cloudflare 绑定元数据问题，不是 K-Vault 上传代码问题，按 [Cloudflare Pages R2 绑定排查](docs/cloudflare-pages-r2.md) 处理。
+
+### 方式二：Docker 部署
+
+适合 VPS、NAS、内网和自托管场景。Docker 部署不依赖 Cloudflare Pages 运行时，单镜像内置静态页面、Nginx 反向代理和 Node API。
+
+#### 最简单：一条 Docker 命令
+
+不需要克隆仓库，也不需要本机安装 Node/npm：
+
 ```bash
-docker compose --profile redis up -d --build
+docker volume create kvault_data
+docker run -d \
+  --name kvault \
+  --restart unless-stopped \
+  -p 8080:8080 \
+  -v kvault_data:/app/data \
+  ghcr.io/katelya77/k-vault:latest
 ```
 
-4. 访问地址：
-   - 上传首页：`http://<host>:8080/`
-   - 管理后台：`http://<host>:8080/admin.html`
-   - WebDAV 页面：`http://<host>:8080/webdav.html`
+访问：
+
+- 上传首页：`http://<host>:8080/`
+- 管理后台：`http://<host>:8080/admin.html`
+- WebDAV 页面：`http://<host>:8080/webdav.html`
+- 健康检查：`http://<host>:8080/api/health`
+
+首次启动时，如果没有提供 `CONFIG_ENCRYPTION_KEY` 和 `SESSION_SECRET`，容器会自动生成并保存到数据卷的 `/app/data/runtime.env`。删除容器不会丢失这些密钥；删除数据卷才会丢失。
+
+公网部署时建议显式设置后台账号：
+
+```bash
+docker run -d \
+  --name kvault \
+  --restart unless-stopped \
+  -p 8080:8080 \
+  -v kvault_data:/app/data \
+  -e BASIC_USER=admin \
+  -e BASIC_PASS='换成强密码' \
+  ghcr.io/katelya77/k-vault:latest
+```
+
+#### 推荐：Docker Compose
+
+如果你已经克隆了仓库，直接运行：
+
+```bash
+docker compose up -d
+```
+
+`docker-compose.yml` 默认拉取 `ghcr.io/katelya77/k-vault:latest`，`.env` 是可选的。需要固定账号、域名、默认存储或上传限制时再创建 `.env`：
+
+```bash
+cp .env.example .env
+```
+
+编辑 `.env` 后重启：
+
+```bash
+docker compose up -d
+```
+
+常用 Docker 环境变量：
+
+| 变量 | 说明 |
+| :--- | :--- |
+| `BASIC_USER` / `BASIC_PASS` | 后台登录账号，公网部署建议设置 |
+| `PUBLIC_BASE_URL` | 外部访问域名，用于生成回链和 webhook URL |
+| `DEFAULT_STORAGE_TYPE` | 默认存储类型：`telegram` / `r2` / `s3` / `discord` / `huggingface` / `webdav` / `github` |
+| `TG_BOT_TOKEN` + `TG_CHAT_ID` | Docker 下的 Telegram 默认存储变量 |
+| `R2_*` / `S3_*` / `WEBDAV_*` / `GITHUB_*` / `HF_*` | 其他存储后端配置 |
+| `UPLOAD_MAX_SIZE` / `CHUNK_SIZE` | 上传限制和分片大小 |
+| `WEB_PORT` | Compose 对外端口，默认 `8080` |
+
+Docker 下也可以不预先写存储环境变量，启动后到管理后台新增/测试/切换存储配置。WebDAV 页面、API Token、API v1 上传、短链和文件直链都走同一个 `8080` 入口。
 
 完整 Docker 说明请查看 [README-DOCKER.md](README-DOCKER.md)。
 
@@ -153,7 +231,7 @@ node scripts/storage-regression.js
 校验标准：
 
 - `/api/status` 中 `webdav.connected` 必须为 `true`
-- `/api/storage/:id/test` 必须返回 `connected=true`
+- Docker 自托管部署可额外校验 `/api/storage/:id/test` 返回 `connected=true`
 - 回归脚本中的 WebDAV `upload / download / delete` 三步必须全部通过
 
 如果是 Docker 部署，只需把 `BASE_URL` 换成你的自托管地址，例如 `http://localhost:8080`。
@@ -222,6 +300,25 @@ curl -X POST "http://127.0.0.1:8081/bot<YOUR_BOT_TOKEN>/setWebhook" \
   -H "Content-Type: application/json" \
   -d "{\"url\":\"https://img.example.com/api/telegram/webhook\",\"secret_token\":\"<YOUR_SECRET>\",\"allowed_updates\":[\"message\",\"channel_post\"]}"
 ```
+
+**Webhook 验证与排查：**
+
+1. `setWebhook` 返回 `{"ok":true,"result":true}` 只代表 Telegram 接受了 webhook 地址，不代表 Bot 已经成功回链。
+2. 调用 `getWebhookInfo` 查看 Telegram 是否正在向你的 Pages 域名投递更新：
+
+```bash
+curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo"
+```
+
+3. 在群/频道发送图片或文件后，查看 Cloudflare Pages Functions 日志。K-Vault 的 webhook POST 响应会包含：
+   - `directLink`：生成的 `/file/...` 链接
+   - `reply.ok`：是否成功调用 `sendMessage`
+   - `reply.reason`：失败时的 Telegram API 描述或跳过原因
+4. 如果 `reply.ok=false`：
+   - 确认 Bot 在频道中是管理员，或在群里有发言权限。
+   - 确认 `TG_UPLOAD_NOTIFY` / `TELEGRAM_UPLOAD_NOTIFY` 没有被设置为 `false`。
+   - 如果设置了 `TG_WEBHOOK_SECRET`，`setWebhook` 的 `secret_token` 必须完全一致。
+   - 群聊场景如果 Bot 收不到普通消息，关闭 BotFather 中的隐私模式，或让用户显式 @Bot。
 
 > **关于 2G 文件：**  
 > 使用自部署 Bot API（`CUSTOM_BOT_API_URL`）并由 Telegram 客户端直接发到群/频道，再由 Webhook 回链，可利用 Bot API 大文件能力（常见可到 2GB）。  
@@ -298,6 +395,8 @@ curl -X POST "http://127.0.0.1:8081/bot<YOUR_BOT_TOKEN>/setWebhook" \
 3. **启用 R2**
    - `设置` → `环境变量` → 添加 `USE_R2` = `true`
    - 重新部署
+
+> 如果重新部署时报 `binding R2_BUCKET of type r2_bucket contains an invalid jurisdiction`，说明 Cloudflare Pages 在校验 R2 绑定元数据时失败，不是上传代码报错。普通 R2 桶不要设置 `jurisdiction`；只有带数据驻留限制的桶才使用 `eu` 或 `fedramp`。按 [Cloudflare Pages R2 绑定排查](docs/cloudflare-pages-r2.md) 删除并重建 Production/Preview 绑定，或运行 `npm run pages:r2:doctor -- --check` 校验 `wrangler.jsonc`。
 
 ### S3 兼容存储（可选）
 
@@ -419,7 +518,7 @@ curl -X POST "http://127.0.0.1:8081/bot<YOUR_BOT_TOKEN>/setWebhook" \
 1. 在你的 WebDAV 服务端准备一个可写目录，并确认具备 `PUT/GET/DELETE/MKCOL` 权限。
 2. 在 Cloudflare Pages 项目中添加上述 `WEBDAV_*` 变量（认证方式二选一：`用户名+密码` 或 `Bearer Token`）。
 3. 重新部署后，访问 `/api/status` 检查 `webdav.connected` 与 `webdav.enabled`，或直接打开 `/webdav.html` 测试上传。
-4. Docker 自托管场景下，在 `.env` 填写相同变量后重启容器（`npm run docker:up` 或 `docker compose up -d --build`）。
+4. Docker 自托管场景下，可以在管理后台新增 WebDAV 配置；如果通过 `.env` 填写变量，则重启容器（`docker compose up -d` 或 `docker restart kvault`）。
 
 **常见问题：**
 
@@ -513,8 +612,8 @@ curl -X POST "http://127.0.0.1:8081/bot<YOUR_BOT_TOKEN>/setWebhook" \
 | `DATA_DIR` | 数据目录 | `/app/data` |
 | `DB_PATH` | SQLite 数据库路径 | `/app/data/k-vault.db` |
 | `CHUNK_DIR` | 分片临时目录 | `/app/data/chunks` |
-| `CONFIG_ENCRYPTION_KEY` | 用于加密存储配置密钥（必填） | - |
-| `SESSION_SECRET` | 会话/签名密钥（建议与加密密钥不同） | - |
+| `CONFIG_ENCRYPTION_KEY` | 用于加密存储配置密钥；Docker 未提供时会写入 `/app/data/runtime.env` | 自动生成 |
+| `SESSION_SECRET` | 会话/签名密钥；Docker 未提供时会写入 `/app/data/runtime.env` | 自动生成 |
 | `UPLOAD_MAX_SIZE` | 最大上传大小（字节） | `104857600` |
 | `UPLOAD_SMALL_FILE_THRESHOLD` | 直传/分片策略阈值（字节） | `20971520` |
 | `CHUNK_SIZE` | 分片大小（字节） | `5242880` |
@@ -554,7 +653,8 @@ curl -X POST "http://127.0.0.1:8081/bot<YOUR_BOT_TOKEN>/setWebhook" \
 
 | 存储后端 | 单文件最大大小 |
 | :--- | :--- |
-| Telegram（网页直传） | 小文件直传 20MB；分片流程当前上限 100MB |
+| Telegram（Cloudflare Pages 网页上传） | 20MB；更大的 Telegram 文件建议通过 Telegram 客户端发送，再由 Webhook 回链 |
+| Telegram（Docker 网页上传） | 50MB（受 Bot API 上传限制影响） |
 | Telegram（自部署 Bot API + Telegram 客户端 + Webhook） | 受 Bot API 与部署环境影响，常见可达 2GB |
 | Cloudflare R2 | 100MB（分片上传） |
 | S3 兼容存储 | 100MB（分片上传） |
@@ -617,12 +717,12 @@ curl -X POST "http://127.0.0.1:8081/bot<YOUR_BOT_TOKEN>/setWebhook" \
 | `ModerateContentApiKey` | 图片审核 API Key | 可选 |
 | `WhiteList_Mode` | 白名单模式 | 可选 |
 | `disable_telemetry` | 禁用遥测 | 可选 |
-| `PORT` | Docker 自托管模式 API 端口 | 可选 |
+| `PORT` | 单镜像容器内部 API 端口，保持 `8787` | 可选 |
 | `DATA_DIR` | Docker 自托管模式数据目录 | 可选 |
 | `DB_PATH` | Docker 自托管模式 SQLite 路径 | 可选 |
 | `CHUNK_DIR` | Docker 自托管模式分片目录 | 可选 |
-| `CONFIG_ENCRYPTION_KEY` | Docker 自托管模式存储配置加密密钥（必填） | 可选 |
-| `SESSION_SECRET` | Docker 自托管模式会话/签名密钥 | 可选 |
+| `CONFIG_ENCRYPTION_KEY` | Docker 自托管模式存储配置加密密钥，未提供时自动生成并持久化 | 可选 |
+| `SESSION_SECRET` | Docker 自托管模式会话/签名密钥，未提供时自动生成并持久化 | 可选 |
 | `UPLOAD_MAX_SIZE` | Docker 自托管模式最大上传大小（字节） | 可选 |
 | `UPLOAD_SMALL_FILE_THRESHOLD` | Docker 自托管模式直传阈值（字节） | 可选 |
 | `CHUNK_SIZE` | Docker 自托管模式分片大小（字节） | 可选 |
@@ -719,11 +819,15 @@ kvault() {
 
 ---
 
-## 致谢
+## 致谢 / Acknowledgements
 
-本项目参考了以下开源项目：
+K-Vault 的早期实现与功能演进参考并受益于多个开源项目、社区讨论与用户反馈。
 
-- [Telegraph-Image](https://github.com/cf-pages/Telegraph-Image) - 原始灵感来源
+- [Telegraph-Image](https://github.com/cf-pages/Telegraph-Image)：K-Vault 早期 Serverless 图床形态的重要上游参考之一。
+- [CloudFlare-ImgBed](https://github.com/MarSeventh/CloudFlare-ImgBed)：优秀的同类开源图床项目，对社区图床方案、多存储后端设计方向以及相关项目生态具有参考价值。
+- Linux.do 社区用户反馈：K-Vault 的多存储后端、Docker 部署形态、WebDAV 等功能方向，均受社区讨论与实际使用需求推动。
+
+K-Vault 并非对上述项目的简单复制，而是在相关开源生态、社区反馈和实际使用需求的基础上，逐步整理、扩展和实现的个人项目。感谢所有开源项目作者与社区用户的贡献和建议。
 
 ---
 

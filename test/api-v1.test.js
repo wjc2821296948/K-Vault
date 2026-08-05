@@ -238,7 +238,7 @@ describe('API v1 middleware auth', function () {
 });
 
 describe('API v1 file share limits', function () {
-  async function invokeV1FileGet({ env, token, fileId = 'r2:file.bin', query = '' }) {
+  async function invokeV1FileGet({ env, token, fileId = 'r2:file.bin', query = '', headers = {} }) {
     const { onRequest: middleware } = await import('../functions/api/v1/_middleware.js');
     const { onRequest: fileRoute } = await import('../functions/api/v1/file/[id].js');
 
@@ -246,7 +246,7 @@ describe('API v1 file share limits', function () {
     const requestUrl = `https://example.com/api/v1/file/${encodedId}${query ? `?${query}` : ''}`;
     const request = new Request(requestUrl, {
       method: 'GET',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, ...headers },
     });
 
     const waiters = [];
@@ -348,5 +348,22 @@ describe('API v1 file share limits', function () {
     assert.strictEqual(response.status, 200);
     const record = await scenario.env.img_url.getWithMetadata(scenario.fileKey);
     assert.strictEqual(Number(record?.metadata?.shareDownloadCount || 0), 1);
+  });
+
+  it('serves R2 byte ranges for media previews', async function () {
+    const scenario = await createFileScenario();
+
+    const response = await invokeV1FileGet({
+      ...scenario,
+      headers: { Range: 'bytes=1-2' },
+    });
+
+    assert.strictEqual(response.status, 206);
+    assert.strictEqual(response.headers.get('Accept-Ranges'), 'bytes');
+    assert.strictEqual(response.headers.get('Content-Range'), 'bytes 1-2/4');
+    assert.strictEqual(response.headers.get('Content-Length'), '2');
+
+    const body = new Uint8Array(await response.arrayBuffer());
+    assert.deepStrictEqual(Array.from(body), [2, 3]);
   });
 });

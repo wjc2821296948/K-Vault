@@ -1,21 +1,20 @@
 services:
-  api:
-    build:
-      context: ./server
-    container_name: kvault-api
+  k-vault:
+    image: ${KVAULT_IMAGE:-ghcr.io/katelya77/k-vault:latest}
+    container_name: kvault
     env_file:
-      - .env
+      - path: .env
+        required: false
+    ports:
+      - "${WEB_PORT:-8080}:8080"
     volumes:
       - kvault_data:/app/data
-    # expose is internal-only (other services in the same compose network can reach it).
-    expose:
-      - "8787"
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:8787/api/health').then((r)=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/api/health"]
       interval: 10s
       timeout: 3s
-      retries: 5
-      start_period: 10s
+      retries: 6
+      start_period: 15s
     restart: unless-stopped
 
   redis:
@@ -24,7 +23,6 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - kvault_redis:/data
-    # expose is internal-only (other services in the same compose network can reach it).
     expose:
       - "6379"
     healthcheck:
@@ -36,19 +34,6 @@ services:
     restart: unless-stopped
     profiles:
       - redis
-
-  web:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    container_name: kvault-web
-    depends_on:
-      api:
-        condition: service_healthy
-    # ports publishes container port to host, so browser/users can access web UI.
-    ports:
-      - "${WEB_PORT:-8080}:80"
-    restart: unless-stopped
 
 volumes:
   kvault_data:

@@ -1178,7 +1178,8 @@
                 folderPath: folderPath,
               }),
             });
-            var src = payload && (payload.src || payload.url || (payload.file && payload.file.src));
+            var first = Array.isArray(payload) ? payload[0] : payload;
+            var src = first && (first.src || first.url || (first.file && first.file.src));
             if (src) {
               pushResult("URL 上传成功", "ok", toAbsoluteUrl(String(src)));
             } else {

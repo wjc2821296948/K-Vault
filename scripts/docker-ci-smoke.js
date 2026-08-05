@@ -2,6 +2,8 @@
 
 const { spawnSync } = require('node:child_process');
 
+const serviceName = process.env.DOCKER_SERVICE || 'k-vault';
+
 function runCommand(command, args) {
   const result = spawnSync(command, args, {
     encoding: 'utf8',
@@ -17,7 +19,7 @@ function runCommand(command, args) {
 }
 
 function runComposeExec(script) {
-  return runCommand('docker', ['compose', 'exec', '-T', 'api', 'sh', '-lc', script]);
+  return runCommand('docker', ['compose', 'exec', '-T', serviceName, 'sh', '-lc', script]);
 }
 
 function parseJson(text) {
@@ -38,7 +40,7 @@ function sleepMs(ms) {
 
 function waitForApi(maxAttempts = 60, intervalMs = 2000) {
   for (let i = 0; i < maxAttempts; i += 1) {
-    const health = runComposeExec('wget -qO- http://localhost:8787/api/health');
+    const health = runComposeExec('wget -qO- http://localhost:8080/api/health');
     if (health.code === 0) {
       return true;
     }
@@ -48,7 +50,7 @@ function waitForApi(maxAttempts = 60, intervalMs = 2000) {
 }
 
 function readStatus() {
-  const response = runComposeExec('wget -qO- http://localhost:8787/api/status');
+  const response = runComposeExec('wget -qO- http://localhost:8080/api/status');
   if (response.code !== 0) {
     return { ok: false, error: response.stderr || response.stdout || 'status request failed', data: null };
   }
@@ -62,7 +64,7 @@ function readStatus() {
 }
 
 function readProfileTypes() {
-  const script = "node -e \"const { createContainer }=require('./lib/container'); const c=createContainer(process.env); console.log(JSON.stringify(c.storageRepo.list(false).map(x=>x.type)));\"";
+  const script = "cd /app/server && node -e \"const { createContainer }=require('./lib/container'); const c=createContainer(process.env); console.log(JSON.stringify(c.storageRepo.list(false).map(x=>x.type)));\"";
   const response = runComposeExec(script);
   if (response.code !== 0) {
     return { ok: false, error: response.stderr || response.stdout || 'profile query failed', types: [] };
@@ -74,6 +76,15 @@ function readProfileTypes() {
   }
 
   return { ok: true, error: '', types: parsed };
+}
+
+function readPublicText(pathname) {
+  const response = runComposeExec(`wget -qO- http://localhost:8080${pathname}`);
+  if (response.code !== 0) {
+    return { ok: false, error: response.stderr || response.stdout || `${pathname} request failed`, text: '' };
+  }
+
+  return { ok: true, error: '', text: response.stdout };
 }
 
 function assertConfigured(status, key, errors) {
@@ -118,9 +129,19 @@ function main() {
 
   const errors = [];
   const status = statusResult.data;
+  const rootPage = readPublicText('/');
+  const uploadPage = readPublicText('/upload');
 
   assertConfigured(status, 'huggingface', errors);
   assertConfigured(status, 'github', errors);
+
+  if (!rootPage.ok || !rootPage.text.includes('K-Vault')) {
+    errors.push('public / should serve the K-Vault static UI through nginx');
+  }
+
+  if (!uploadPage.ok || !uploadPage.text.includes('K-Vault')) {
+    errors.push('GET /upload should render the same root upload UI as Cloudflare Pages');
+  }
 
   const typeSet = new Set(profileResult.types);
   if (!typeSet.has('huggingface')) {

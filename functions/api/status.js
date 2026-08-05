@@ -6,6 +6,10 @@ import { checkGitHubConnection, hasGitHubConfig } from '../utils/github.js';
 import { getGuestConfig } from '../utils/guest.js';
 import { buildTelegramBotApiUrl, getTelegramApiBase } from '../utils/telegram.js';
 
+const MB = 1024 * 1024;
+const DIRECT_UPLOAD_THRESHOLD = 20 * MB;
+const CHUNK_UPLOAD_LIMIT = 100 * MB;
+
 function defaultStatusItem({ layer = 'direct' } = {}) {
   return {
     connected: false,
@@ -39,6 +43,7 @@ export async function onRequestGet(context) {
     github: defaultStatusItem({ layer: 'direct' }),
     auth: { enabled: false, message: 'Disabled' },
     guestUpload: getGuestConfig(env),
+    uploadLimits: getUploadLimits(),
     capabilities: [
       storageCapability('telegram', 'Telegram', 'direct'),
       storageCapability('r2', 'R2', 'direct'),
@@ -72,7 +77,7 @@ export async function onRequestGet(context) {
           } else {
             status.telegram = {
               connected: false,
-              enabled: false,
+              enabled: true,
               configured: true,
               layer: 'direct',
               message: data?.description || 'Telegram API check failed',
@@ -82,7 +87,7 @@ export async function onRequestGet(context) {
         .catch((error) => {
           status.telegram = {
             connected: false,
-            enabled: false,
+            enabled: true,
             configured: true,
             layer: 'direct',
             message: error.message || 'Telegram API check failed',
@@ -134,7 +139,7 @@ export async function onRequestGet(context) {
         .catch((error) => {
           status.r2 = {
             connected: false,
-            enabled: false,
+            enabled: true,
             configured: true,
             layer: 'direct',
             message: error.message || 'R2 check failed',
@@ -160,7 +165,7 @@ export async function onRequestGet(context) {
         } catch (error) {
           status.s3 = {
             connected: false,
-            enabled: false,
+            enabled: true,
             configured: true,
             layer: 'direct',
             message: error.message || 'S3 check failed',
@@ -189,7 +194,7 @@ export async function onRequestGet(context) {
         .catch((error) => {
           status.discord = {
             connected: false,
-            enabled: false,
+            enabled: true,
             configured: true,
             layer: 'direct',
             message: error.message || 'Discord check failed',
@@ -216,7 +221,7 @@ export async function onRequestGet(context) {
         .catch((error) => {
           status.huggingface = {
             connected: false,
-            enabled: false,
+            enabled: true,
             configured: true,
             layer: 'direct',
             message: error.message || 'HuggingFace check failed',
@@ -243,7 +248,7 @@ export async function onRequestGet(context) {
         .catch((error) => {
           status.webdav = {
             connected: false,
-            enabled: false,
+            enabled: true,
             configured: true,
             layer: 'mounted',
             message: error.message || 'WebDAV check failed',
@@ -271,7 +276,7 @@ export async function onRequestGet(context) {
         .catch((error) => {
           status.github = {
             connected: false,
-            enabled: false,
+            enabled: true,
             configured: true,
             layer: 'direct',
             message: error.message || 'GitHub check failed',
@@ -295,4 +300,46 @@ export async function onRequestGet(context) {
       'Cache-Control': 'no-cache',
     },
   });
+}
+
+function getUploadLimits() {
+  return {
+    telegram: {
+      maxBytes: DIRECT_UPLOAD_THRESHOLD,
+      directThreshold: DIRECT_UPLOAD_THRESHOLD,
+      supportsChunkUpload: false,
+      message: 'Cloudflare Pages 上的 Telegram 网页上传限制为 20MB。较大的浏览器上传请使用 R2、S3、WebDAV 或 GitHub，或直接把文件发到 Telegram 后使用 Webhook 回链。',
+    },
+    r2: {
+      maxBytes: CHUNK_UPLOAD_LIMIT,
+      directThreshold: DIRECT_UPLOAD_THRESHOLD,
+      supportsChunkUpload: true,
+    },
+    s3: {
+      maxBytes: CHUNK_UPLOAD_LIMIT,
+      directThreshold: DIRECT_UPLOAD_THRESHOLD,
+      supportsChunkUpload: true,
+    },
+    discord: {
+      maxBytes: 25 * MB,
+      directThreshold: DIRECT_UPLOAD_THRESHOLD,
+      supportsChunkUpload: true,
+      message: 'Discord 上传上限受服务器加成影响，K-Vault 默认按 25MB 保守处理。',
+    },
+    huggingface: {
+      maxBytes: 35 * MB,
+      directThreshold: DIRECT_UPLOAD_THRESHOLD,
+      supportsChunkUpload: true,
+    },
+    webdav: {
+      maxBytes: CHUNK_UPLOAD_LIMIT,
+      directThreshold: DIRECT_UPLOAD_THRESHOLD,
+      supportsChunkUpload: true,
+    },
+    github: {
+      maxBytes: CHUNK_UPLOAD_LIMIT,
+      directThreshold: DIRECT_UPLOAD_THRESHOLD,
+      supportsChunkUpload: true,
+    },
+  };
 }

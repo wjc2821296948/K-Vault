@@ -22,7 +22,7 @@ function buildFileUrl(config, filePath) {
 
 function pickUploadMethod(mimeType = '') {
   const type = String(mimeType).toLowerCase();
-  if (type.startsWith('image/')) return { method: 'sendPhoto', field: 'photo' };
+  if (type.startsWith('image/')) return { method: 'sendDocument', field: 'document' };
   if (type.startsWith('audio/')) return { method: 'sendAudio', field: 'audio' };
   if (type.startsWith('video/')) return { method: 'sendVideo', field: 'video' };
   return { method: 'sendDocument', field: 'document' };
@@ -37,6 +37,9 @@ function pickFileId(result) {
   if (result.video?.file_id) return result.video.file_id;
   if (result.audio?.file_id) return result.audio.file_id;
   if (result.voice?.file_id) return result.voice.file_id;
+  if (result.sticker?.file_id) return result.sticker.file_id;
+  if (result.animation?.file_id) return result.animation.file_id;
+  if (result.video_note?.file_id) return result.video_note.file_id;
   return null;
 }
 
@@ -52,7 +55,7 @@ class TelegramStorageAdapter {
 
   validate() {
     if (!this.config.botToken || !this.config.chatId) {
-      throw new Error('Telegram storage requires botToken and chatId.');
+      throw new Error('Telegram 存储需要配置 botToken 和 chatId。');
     }
   }
 
@@ -80,7 +83,7 @@ class TelegramStorageAdapter {
     // We choose stability-first: enforce 50MB upload ceiling here.
     const maxSize = 50 * 1024 * 1024;
     if (fileSize > maxSize) {
-      throw new Error('Telegram upload limit exceeded (50MB).');
+      throw new Error('Telegram 上传超过 50MB 上限。');
     }
 
     const { method, field } = pickUploadMethod(mimeType);
@@ -98,8 +101,8 @@ class TelegramStorageAdapter {
 
     let json = await response.json().catch(() => ({}));
 
-    // Fallback photo/audio to document when Telegram media type checks reject.
-    if ((!response.ok || !json.ok) && (method === 'sendPhoto' || method === 'sendAudio')) {
+    // Fallback audio to document when Telegram media type checks reject.
+    if ((!response.ok || !json.ok) && method === 'sendAudio') {
       const fallbackForm = new FormData();
       fallbackForm.append('chat_id', this.config.chatId);
       fallbackForm.append('document', new File([buffer], normalizedName, { type: mimeType || 'application/octet-stream' }));
@@ -116,7 +119,7 @@ class TelegramStorageAdapter {
 
     const fileId = pickFileId(json.result);
     if (!fileId) {
-      throw new Error('Telegram upload succeeded but file_id missing.');
+      throw new Error('Telegram 已接收文件，但未返回可用的 file_id。');
     }
 
     return {
@@ -139,7 +142,7 @@ class TelegramStorageAdapter {
     const infoJson = await infoResponse.json().catch(() => ({}));
 
     if (!infoResponse.ok || !infoJson.ok || !infoJson.result?.file_path) {
-      throw new Error(infoJson.description || 'Telegram getFile failed.');
+      throw new Error(infoJson.description || 'Telegram 获取文件信息失败。');
     }
 
     const headers = {};
@@ -151,7 +154,7 @@ class TelegramStorageAdapter {
     });
 
     if (!response.ok && response.status !== 206) {
-      throw new Error(`Telegram download failed (${response.status})`);
+      throw new Error(`Telegram 下载失败（${response.status}）`);
     }
 
     return response;
