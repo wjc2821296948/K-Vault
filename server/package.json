@@ -12,7 +12,7 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@hono/node-server": "^1.19.14",
+    "@hono/node-server": "^1.19.15",
     "hono": "^4.12.25",
     "redis": "^4.7.1"
   }
